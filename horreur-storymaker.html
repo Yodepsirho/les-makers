@@ -7,154 +7,182 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --bg:        #0d0d0d;
+    --surface:   #141414;
+    --border:    #2a2a2a;
+    --border-hi: #3d3d3d;
+    --text:      #e8e8e8;
+    --muted:     #888;
+    --gold:      #b8962e;
+    --gold-dim:  #7a621e;
+  }
+
   body {
     min-height: 100vh;
-    background: linear-gradient(180deg, #000 0%, #1c0000 50%, #000 100%);
-    font-family: Georgia, 'Times New Roman', serif;
-    padding: 1.5rem 1rem 3rem;
-    color: #fca5a5;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 2.5rem 1.5rem 3rem;
   }
 
   .container {
-    max-width: 640px;
+    max-width: 680px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   /* En-tête */
-  header {
-    text-align: center;
-    padding: 2rem 0 2rem;
-    border-bottom: 2px solid #7f1d1d;
-    margin-bottom: 2rem;
+  header { text-align: center; margin-bottom: 2.5rem; width: 100%; }
+
+  .logo {
+    display: inline-block;
+    font-size: 2rem;
+    margin-bottom: 0.8rem;
+    color: var(--gold);
+    opacity: .8;
   }
 
-  .skull {
-    font-size: 3rem;
-    display: block;
-    margin-bottom: .75rem;
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: .45; }
-  }
-
-  h1 {
-    font-size: clamp(1.5rem, 6vw, 2.2rem);
-    font-weight: 900;
-    letter-spacing: .2em;
+  header h1 {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 300;
+    letter-spacing: .35em;
     text-transform: uppercase;
-    color: #dc2626;
-    text-shadow: 0 0 18px rgba(220,38,38,.8), 0 0 40px rgba(220,38,38,.4);
-    margin-bottom: .4rem;
+    color: var(--gold);
+    margin-bottom: .6rem;
+  }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: var(--gold-dim);
+    margin: .8rem auto;
   }
 
   header p {
-    font-style: italic;
-    color: #f87171;
-    font-size: .88rem;
-    opacity: .75;
+    color: var(--muted);
+    font-size: .8rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
   }
 
   /* Bouton */
   #btn {
     width: 100%;
-    background: linear-gradient(135deg, #7f1d1d, #000);
-    border: 2px solid #b91c1c;
-    color: #fecaca;
-    font-family: Georgia, serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    padding: 1rem 1.5rem;
+    background: var(--surface);
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
     border-radius: .5rem;
+    padding: 1rem 1.5rem;
+    font-size: .95rem;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: .75rem;
+    gap: .6rem;
+    transition: background .2s, border-color .2s, color .2s, transform .15s;
     margin-bottom: 2rem;
-    box-shadow: 0 0 20px rgba(220,38,38,.4);
-    transition: box-shadow .2s, background .2s, transform .15s;
   }
   #btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #991b1b, #1c0000);
-    box-shadow: 0 0 35px rgba(220,38,38,.7);
+    background: #1a1a1a;
+    border-color: var(--gold);
+    color: #fff;
     transform: translateY(-2px);
   }
   #btn:active:not(:disabled) { transform: translateY(0); }
   #btn:disabled { opacity: .5; cursor: not-allowed; }
 
-  .btn-icon { font-size: 1.3rem; display: inline-block; }
+  .btn-icon { display: inline-flex; }
   .spin { animation: spin .7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* Placeholder */
   #placeholder {
     text-align: center;
-    color: #7f1d1d;
-    font-style: italic;
+    color: var(--muted);
     padding: 3rem 0;
-    font-size: 1rem;
+    font-size: .88rem;
+    letter-spacing: .05em;
   }
 
   /* Cartes */
-  #results { display: flex; flex-direction: column; gap: 1.1rem; }
+  #results { display: flex; flex-direction: column; gap: .85rem; width: 100%; }
 
   .card {
-    background: rgba(0,0,0,.85);
-    border: 2px solid #7f1d1d;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: .5rem;
-    padding: 1.2rem 1.35rem;
-    box-shadow: 0 0 15px rgba(139,0,0,.35);
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
     opacity: 0;
-    transform: translateY(14px);
-    transition: opacity .4s ease, transform .4s ease, box-shadow .2s;
+    transform: translateY(10px);
+    transition: opacity .35s ease, transform .35s ease, border-color .2s;
   }
   .card.show { opacity: 1; transform: translateY(0); }
-  .card:hover { box-shadow: 0 0 28px rgba(220,38,38,.55); }
+  .card:hover { border-color: var(--border-hi); }
 
   .card-cat {
-    font-size: .7rem;
-    font-weight: 700;
-    letter-spacing: .15em;
+    font-size: 1.5rem;
+    font-weight: 600;
     text-transform: uppercase;
-    color: #ef4444;
-    border-bottom: 1px solid #7f1d1d;
-    padding-bottom: .5rem;
-    margin-bottom: .6rem;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-  }
-
-  .card-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #fca5a5;
+    letter-spacing: .15em;
+    color: var(--gold-dim);
     margin-bottom: .4rem;
   }
 
-  .card-desc {
-    font-size: .82rem;
-    color: #fecaca;
-    line-height: 1.7;
-    opacity: .85;
-    font-family: 'Segoe UI', system-ui, sans-serif;
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: .4rem;
+    letter-spacing: .02em;
   }
+
+  .card-desc {
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  /* Nav retour */
+  .back-link {
+    margin-top: 2.5rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: .78rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    transition: color .2s;
+  }
+  .back-link:hover { color: var(--gold); }
 </style>
 </head>
 <body>
 <div class="container">
 
   <header>
-    <span class="skull">💀</span>
+    <span class="logo">☽</span>
     <h1>Horreur Story Maker</h1>
-    <p>Générez vos cauchemars...</p>
+    <div class="divider"></div>
+    <p>Générateur de cauchemars</p>
   </header>
 
   <button id="btn" onclick="generate()">
-    <span class="btn-icon" id="btn-icon">🔀</span>
+    <span class="btn-icon" id="btn-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 3 21 3 21 8"/>
+        <line x1="4" y1="20" x2="21" y2="3"/>
+        <polyline points="21 16 21 21 16 21"/>
+        <line x1="15" y1="15" x2="21" y2="21"/>
+      </svg>
+    </span>
     <span id="btn-label">Générer une histoire</span>
   </button>
 
@@ -163,6 +191,8 @@
   </div>
 
   <div id="results"></div>
+
+  <a class="back-link" href="index.html">← Retour aux outils</a>
 
 </div>
 <script>

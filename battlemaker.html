@@ -7,146 +7,198 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --bg:        #0d0d0d;
+    --surface:   #141414;
+    --border:    #2a2a2a;
+    --border-hi: #3d3d3d;
+    --text:      #e8e8e8;
+    --muted:     #888;
+    --gold:      #b8962e;
+    --gold-dim:  #7a621e;
+  }
+
   body {
     min-height: 100vh;
-    background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 2.5rem 1.5rem;
   }
 
-  h1 {
-    font-size: clamp(2rem, 8vw, 3.2rem);
-    font-weight: 800;
-    letter-spacing: .25em;
+  /* En-tête */
+  header { text-align: center; margin-bottom: 2.5rem; }
+
+  .logo {
+    display: inline-block;
+    font-size: 2rem;
+    margin-bottom: 0.8rem;
+    color: var(--gold);
+    opacity: .8;
+  }
+
+  header h1 {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 300;
+    letter-spacing: .35em;
     text-transform: uppercase;
-    background: linear-gradient(135deg, #818cf8, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 2rem;
-    text-align: center;
+    color: var(--gold);
+    margin-bottom: .6rem;
   }
 
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: var(--gold-dim);
+    margin: .8rem auto;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: .8rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+  }
+
+  /* Carte */
   #card {
     width: 100%;
     max-width: 580px;
-    background: rgba(30, 41, 59, .85);
-    border: 1px solid rgba(99, 102, 241, .25);
-    border-radius: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: .5rem;
     padding: 2rem;
     margin-bottom: 1.5rem;
     min-height: 200px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,.4);
-    transition: box-shadow .4s, opacity .15s;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+    transition: border-color .3s, opacity .15s, box-shadow .3s;
   }
 
   #card.flash { opacity: .5; }
 
   #card .empty {
-    color: #475569;
+    color: var(--muted);
     text-align: center;
-    font-size: 1.05rem;
+    font-size: .95rem;
   }
 
   .badge {
     display: inline-block;
     padding: .3rem .85rem;
-    border-radius: .5rem;
-    color: #fff;
+    border-radius: .25rem;
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
     font-size: .75rem;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: .08em;
+    letter-spacing: .12em;
     margin-bottom: 1rem;
     width: fit-content;
   }
 
-  .cat-Environnement { background: linear-gradient(135deg,#0284c7,#1d4ed8); box-shadow: 0 4px 12px rgba(2,132,199,.4); }
-  .cat-Élément       { background: linear-gradient(135deg,#d97706,#c2410c); box-shadow: 0 4px 12px rgba(217,119,6,.4); }
-  .cat-Décor         { background: linear-gradient(135deg,#475569,#374151); box-shadow: 0 4px 12px rgba(71,85,105,.4); }
-  .cat-Individu      { background: linear-gradient(135deg,#e11d48,#b91c1c); box-shadow: 0 4px 12px rgba(225,29,72,.4); }
-  .cat-Bonus         { background: linear-gradient(135deg,#7c3aed,#6d28d9); box-shadow: 0 4px 12px rgba(124,58,237,.4); }
-
-  .glow-Environnement { box-shadow: 0 0 40px rgba(2,132,199,.35),   0 20px 40px rgba(0,0,0,.4); }
-  .glow-Élément       { box-shadow: 0 0 40px rgba(217,119,6,.35),   0 20px 40px rgba(0,0,0,.4); }
-  .glow-Décor         { box-shadow: 0 0 40px rgba(71,85,105,.35),   0 20px 40px rgba(0,0,0,.4); }
-  .glow-Individu      { box-shadow: 0 0 40px rgba(225,29,72,.35),   0 20px 40px rgba(0,0,0,.4); }
-  .glow-Bonus         { box-shadow: 0 0 40px rgba(124,58,237,.35),  0 20px 40px rgba(0,0,0,.4); }
-
   #card-title {
-    font-size: clamp(1.4rem, 4.5vw, 1.9rem);
-    font-weight: 700;
-    color: #f1f5f9;
+    font-size: clamp(1.3rem, 4.5vw, 1.7rem);
+    font-weight: 600;
+    color: var(--text);
     line-height: 1.2;
     margin-bottom: .8rem;
+    letter-spacing: .03em;
   }
 
   #card-desc {
-    color: #94a3b8;
-    line-height: 1.75;
-    font-size: .98rem;
+    color: var(--muted);
+    line-height: 1.7;
+    font-size: .92rem;
   }
 
+  /* Bouton */
   #btn {
     width: 100%;
     max-width: 580px;
-    background: linear-gradient(135deg, #6366f1, #7c3aed);
-    color: #fff;
-    border: none;
-    border-radius: .875rem;
+    background: var(--surface);
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    border-radius: .5rem;
     padding: 1rem 1.5rem;
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: .03em;
+    font-size: .95rem;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: .6rem;
-    box-shadow: 0 8px 24px rgba(99,102,241,.4);
-    transition: filter .15s, transform .15s, box-shadow .15s;
+    transition: background .2s, border-color .2s, color .2s, transform .15s;
   }
 
-  #btn:hover  { filter: brightness(1.12); transform: translateY(-2px); box-shadow: 0 12px 28px rgba(99,102,241,.55); }
-  #btn:active { filter: brightness(.9);   transform: translateY(0);    box-shadow: 0 4px 12px rgba(99,102,241,.3); }
+  #btn:hover {
+    background: #1a1a1a;
+    border-color: var(--gold);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+  #btn:active { transform: translateY(0); }
 
   #counter {
-    margin-top: 1rem;
-    color: #334155;
-    font-size: .82rem;
+    margin-top: 1.2rem;
+    color: var(--muted);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
     text-align: center;
     min-height: 1.2em;
   }
+
+  /* Nav retour */
+  .back-link {
+    margin-top: 2rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: .78rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    transition: color .2s;
+  }
+  .back-link:hover { color: var(--gold); }
 </style>
 </head>
 <body>
 
-<h1>Battlemaker</h1>
+<header>
+  <span class="logo">⚔</span>
+  <h1>Battlemaker</h1>
+  <div class="divider"></div>
+  <p>Tirage de cartes de combat</p>
+</header>
 
 <div id="card">
   <p class="empty">Tirez votre première carte pour commencer</p>
 </div>
 
 <button id="btn" onclick="draw()">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-       stroke="currentColor" stroke-width="2.2"
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2"
        stroke-linecap="round" stroke-linejoin="round">
     <polyline points="16 3 21 3 21 8"/>
     <line x1="4" y1="20" x2="21" y2="3"/>
     <polyline points="21 16 21 21 16 21"/>
     <line x1="15" y1="15" x2="21" y2="21"/>
   </svg>
-  Tirer une nouvelle carte
+  Tirer une carte
 </button>
 
 <p id="counter"></p>
+
+<a class="back-link" href="index.html">← Retour aux outils</a>
 
 <script>
 const CARDS = {
@@ -189,7 +241,7 @@ const CARDS = {
     ["Explosion",       "Déflagration, détonation, substance instable, souffle soudain, destruction brusque du décor, risque de démembrement, d'être sonné, repoussé par le souffle."],
     ["Fragile",         "Zone délabrée, endroit affaibli, instable, équilibre précaire, érodé, endommagé, vermoulu, en ruine, risque d'écroulement, nécessité de mouvements précautionneux."],
     ["Trou",            "Sol qui se dérobe, faille, crevasse, craquelure, déchirure, risque de tomber de haut, disparition progressive du sol, affaissement de la zone, descente de quelques étages."],
-    ["Zéro G",          "Zone d'apesanteur, gravité modifiée, attraction ou répulsion magique, lévitation forcée, flottement, mouvements dans les airs, déplacements modifiés."],
+    ["Zéro G",          "Zone d'apesanteur, gravité modifiée, attraction ou répulsion magique, lévitation forced, flottement, mouvements dans les airs, déplacements modifiés."],
     ["Mort subite",     "Zone de mort subite dévoilée, broyeur, ventilateur géant, réacteur en marche, bassin toxique, piège, câble à nu, espace létal, risque de mort directe, danger mortel."],
     ["Interrupteur",    "Obscurité soudaine, lumières s'éteignant brutalement, zone plongée dans les ténèbres, lampe qui grésille, risque de se cogner, de ne pas déceler les dangers ou les menaces."],
     ["Glissant",        "Surface glissante, zone huileuse, terrain savonneux, verglas, risque de perte d'équilibre, de chute, mouvements plus complexes, glissades soudaines."],
@@ -236,7 +288,7 @@ const CARDS = {
     ["Voie",         "Pénombre, visibilité réduite, opacification, sens annulés, caché, dissimulé, invisible, inconnu, effet de surprise, que l'on ne discerne pas au premier abord, peu détectable."],
     ["Magique",      "D'origine mystique, magique, enchantée, surnaturelle, pas de ce monde, paranormale, mystérieuse, occulte, qui dépasse l'entendement, bizarre."],
     ["Dysfonction",  "Défectueux, dont le fonctionnement ou le comportement est erratique, chaotique, inattendu, cassé, endommagé, défaut, troublé, aléatoire, perturbé."],
-    ["Infecté",      "Malade, infecté, contagieux, maudit, victime d'une affliction, vénéneux, peut être transmis, épidémie, effets secondaires, élément pathogène, virus."]
+    ["Infecté",      "Malade, infecté, contagieux, maudit, victime d'une affliction, vénéneux, peut être transmitted, épidémie, effets secondaires, élément pathogène, virus."]
   ]
 };
 
@@ -249,7 +301,6 @@ function rand(arr) {
 }
 
 function draw() {
-  // Catégories disponibles : évite les 2 dernières
   let pool = [...CATS];
   if (history.length >= 2) pool = CATS.filter(c => !history.slice(-2).includes(c));
   else if (history.length === 1) pool = CATS.filter(c => c !== history[0]);
@@ -257,21 +308,16 @@ function draw() {
   const cat = rand(pool);
   const [titre, desc] = rand(CARDS[cat]);
 
-  // Historique (on garde seulement les 2 derniers)
   history.push(cat);
   if (history.length > 2) history.shift();
   total++;
 
-  // Flash
   const card = document.getElementById("card");
   card.classList.add("flash");
   setTimeout(() => card.classList.remove("flash"), 150);
 
-  // Mise à jour du DOM
-  const catKey = cat.replace(/[^a-zA-ZÀ-ÿ]/g, "");
-  card.className = "glow-" + cat;
   card.innerHTML =
-    `<span class="badge cat-${cat}">${cat}</span>` +
+    `<span class="badge">${cat}</span>` +
     `<div id="card-title">${titre}</div>` +
     `<div id="card-desc">${desc}</div>`;
 
