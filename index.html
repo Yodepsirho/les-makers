@@ -7,209 +7,183 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --bg:        #0d0d0d;
+    --surface:   #141414;
+    --border:    #2a2a2a;
+    --border-hi: #3d3d3d;
+    --text:      #e8e8e8;
+    --muted:     #666;
+    --gold:      #b8962e;
+    --gold-dim:  #7a621e;
+  }
+
   body {
     min-height: 100vh;
-    background: linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+    background: var(--bg);
+    color: var(--text);
     font-family: 'Segoe UI', system-ui, sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem 1.25rem;
-    color: #f1f5f9;
+    padding: 2.5rem 1.5rem;
   }
 
   /* En-tête */
-  header {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
+  header { text-align: center; margin-bottom: 3.5rem; }
 
   .logo {
-    font-size: 3rem;
-    margin-bottom: .5rem;
-    line-height: 1;
+    display: inline-block;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    opacity: .7;
   }
 
   header h1 {
-    font-size: clamp(1.6rem, 6vw, 2.4rem);
-    font-weight: 800;
-    letter-spacing: .08em;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 300;
+    letter-spacing: .35em;
     text-transform: uppercase;
-    background: linear-gradient(135deg, #818cf8, #a78bfa, #c084fc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: .5rem;
+    color: var(--gold);
+    margin-bottom: .6rem;
+  }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: var(--gold-dim);
+    margin: .8rem auto;
   }
 
   header p {
-    color: #64748b;
-    font-size: .9rem;
-    letter-spacing: .04em;
+    color: var(--muted);
+    font-size: .8rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
   }
 
-  /* Grille de cartes */
+  /* Grille */
   .grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.1rem;
+    gap: 1px;
     width: 100%;
-    max-width: 480px;
+    max-width: 900px;
+    border: 1px solid var(--border);
+    background: var(--border);
   }
 
-  @media (min-width: 560px) {
-    .grid { grid-template-columns: 1fr 1fr; max-width: 560px; }
+  @media (min-width: 600px) {
+    .grid { grid-template-columns: 1fr 1fr; }
   }
-
-  @media (min-width: 800px) {
-    .grid { grid-template-columns: 1fr 1fr 1fr 1fr; max-width: 960px; }
+  @media (min-width: 900px) {
+    .grid { grid-template-columns: repeat(4, 1fr); }
   }
 
   /* Carte outil */
   .tool-card {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
     text-decoration: none;
-    border-radius: 1.25rem;
-    padding: 2rem 1.25rem 1.75rem;
-    border: 1px solid transparent;
-    transition: transform .2s, box-shadow .2s, filter .2s;
+    background: var(--surface);
+    padding: 2rem 1.75rem;
+    transition: background .2s;
     position: relative;
     overflow: hidden;
   }
 
-  .tool-card::before {
+  .tool-card::after {
     content: '';
     position: absolute;
-    inset: 0;
-    background: inherit;
-    filter: brightness(.7);
-    z-index: 0;
-    transition: filter .2s;
+    bottom: 0; left: 0;
+    width: 100%; height: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s ease;
   }
 
-  .tool-card:hover { transform: translateY(-4px); }
-  .tool-card:hover::before { filter: brightness(.85); }
-  .tool-card:active { transform: translateY(-1px); }
-
-  .tool-card > * { position: relative; z-index: 1; }
-
-  /* Couleurs par outil */
-  .card-battle {
-    background: linear-gradient(145deg, #1e1b4b, #312e81);
-    border-color: rgba(99,102,241,.35);
-    box-shadow: 0 8px 32px rgba(99,102,241,.2);
-  }
-  .card-battle:hover { box-shadow: 0 16px 40px rgba(99,102,241,.4); }
-
-  .card-chara {
-    background: linear-gradient(145deg, #1a0533, #4c1d95);
-    border-color: rgba(167,139,250,.35);
-    box-shadow: 0 8px 32px rgba(167,139,250,.2);
-  }
-  .card-chara:hover { box-shadow: 0 16px 40px rgba(167,139,250,.4); }
-
-  .card-story {
-    background: linear-gradient(145deg, #1c0a00, #7c2d12);
-    border-color: rgba(251,146,60,.35);
-    box-shadow: 0 8px 32px rgba(251,146,60,.2);
-  }
-  .card-story:hover { box-shadow: 0 16px 40px rgba(251,146,60,.4); }
-
-  .card-horror {
-    background: linear-gradient(145deg, #1c0000, #7f1d1d);
-    border-color: rgba(220,38,38,.4);
-    box-shadow: 0 8px 32px rgba(220,38,38,.2);
-  }
-  .card-horror:hover { box-shadow: 0 16px 40px rgba(220,38,38,.5); }
-  .card-horror .tool-name  { color: #fca5a5; }
-  .card-horror .tool-arrow { color: #ef4444; }
+  .tool-card:hover { background: #1a1a1a; }
+  .tool-card:hover::after { transform: scaleX(1); }
 
   .tool-icon {
-    font-size: 2.8rem;
-    margin-bottom: 1rem;
-    line-height: 1;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,.4));
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+    opacity: .5;
   }
 
   .tool-name {
-    font-size: 1.25rem;
-    font-weight: 800;
-    letter-spacing: .06em;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .2em;
     text-transform: uppercase;
-    margin-bottom: .5rem;
+    color: var(--gold);
+    margin-bottom: .6rem;
   }
-
-  .card-battle .tool-name { color: #a5b4fc; }
-  .card-chara .tool-name  { color: #c4b5fd; }
-  .card-story .tool-name  { color: #fdba74; }
 
   .tool-desc {
     font-size: .78rem;
-    color: rgba(255,255,255,.55);
-    line-height: 1.5;
+    color: var(--muted);
+    line-height: 1.6;
+    flex: 1;
   }
 
   .tool-arrow {
-    margin-top: 1.25rem;
-    font-size: .8rem;
-    font-weight: 600;
-    letter-spacing: .05em;
-    opacity: .5;
-    transition: opacity .2s, transform .2s;
+    margin-top: 1.5rem;
+    font-size: .72rem;
+    letter-spacing: .12em;
+    color: var(--border-hi);
+    text-transform: uppercase;
+    transition: color .2s;
   }
-  .tool-card:hover .tool-arrow { opacity: 1; transform: translateX(4px); }
-
-  .card-battle .tool-arrow { color: #818cf8; }
-  .card-chara  .tool-arrow { color: #a78bfa; }
-  .card-story  .tool-arrow { color: #fb923c; }
+  .tool-card:hover .tool-arrow { color: var(--gold); }
 
   /* Pied de page */
   footer {
     margin-top: 3rem;
-    color: #1e293b;
-    font-size: .75rem;
-    text-align: center;
-    letter-spacing: .05em;
+    color: #222;
+    font-size: .7rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">⚔️</div>
+  <span class="logo">⚔</span>
   <h1>Outils JDR</h1>
+  <div class="divider"></div>
   <p>Générateurs aléatoires pour vos parties</p>
 </header>
 
 <div class="grid">
 
-  <a class="tool-card card-battle" href="battlemaker.html">
-    <div class="tool-icon">⚔️</div>
+  <a class="tool-card" href="battlemaker.html">
+    <div class="tool-icon">⚔</div>
     <div class="tool-name">Battlemaker</div>
     <div class="tool-desc">Tirage de cartes de combat — Environnement, Élément, Décor, Individu, Bonus</div>
     <div class="tool-arrow">Ouvrir →</div>
   </a>
 
-  <a class="tool-card card-chara" href="charamaker.html">
-    <div class="tool-icon">🎭</div>
+  <a class="tool-card" href="charamaker.html">
+    <div class="tool-icon">◈</div>
     <div class="tool-name">CharaMaker</div>
     <div class="tool-desc">Générateur de personnage — Origine, Marque, Motivation, Vice/Vertu, Détail, Caractère, Bonus</div>
     <div class="tool-arrow">Ouvrir →</div>
   </a>
 
-  <a class="tool-card card-story" href="storymaker.html">
-    <div class="tool-icon">📖</div>
+  <a class="tool-card" href="storymaker.html">
+    <div class="tool-icon">◎</div>
     <div class="tool-name">StoryMaker</div>
     <div class="tool-desc">Générateur de quête — Sujet, Accroche, Action, Alliés, Menaces, Bonus</div>
     <div class="tool-arrow">Ouvrir →</div>
   </a>
 
-  <a class="tool-card card-horror" href="horreur-storymaker.html">
-    <div class="tool-icon">💀</div>
+  <a class="tool-card" href="horreur-storymaker.html">
+    <div class="tool-icon">☽</div>
     <div class="tool-name">Horreur Story Maker</div>
     <div class="tool-desc">Générateur de cauchemars — Sujet, Accroche, Action, Alliés, Menaces, Bonus</div>
     <div class="tool-arrow">Ouvrir →</div>
@@ -217,9 +191,7 @@
 
 </div>
 
-<footer>
-  Tous droits réservés · Contenu personnel · Usage privé
-</footer>
+<footer>Usage privé · Contenu personnel</footer>
 
 </body>
 </html>
