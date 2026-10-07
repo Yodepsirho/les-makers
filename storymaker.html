@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StoryMaker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #4c1d95 50%, #0f172a 100%);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    padding: 1.75rem 0 1.75rem;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 8vw, 3rem);
+    font-weight: 800;
+    color: #fbbf24;
+    letter-spacing: .05em;
+  }
+
+  header p {
+    color: #c4b5fd;
+    font-size: .88rem;
+    margin-top: .3rem;
+  }
+
+  /* Bouton */
+  #btn {
+    width: 100%;
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: .875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    box-shadow: 0 8px 24px rgba(245,158,11,.35);
+    transition: filter .15s, transform .15s, box-shadow .15s;
+    margin-bottom: 1.75rem;
+  }
+  #btn:hover:not(:disabled) {
+    filter: brightness(1.12);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(245,158,11,.5);
+  }
+  #btn:active:not(:disabled) { filter: brightness(.9); transform: translateY(0); }
+  #btn:disabled { opacity: .55; cursor: not-allowed; }
+  #btn svg { flex-shrink: 0; }
+  .spin { animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Placeholder */
+  #placeholder {
+    text-align: center;
+    color: rgba(196,181,253,.5);
+    padding: 3rem 0;
+  }
+  #placeholder svg { margin: 0 auto 1rem; display: block; opacity: .4; }
+
+  /* Cartes */
+  #results { display: flex; flex-direction: column; gap: .85rem; }
+
+  .card {
+    border-radius: .875rem;
+    padding: 1.2rem 1.35rem;
+    border: 2px solid rgba(251,191,36,.2);
+    box-shadow: 0 4px 20px rgba(0,0,0,.35);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .card.show { opacity: 1; transform: translateY(0); }
+
+  .card-cat {
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .13em;
+    color: #fcd34d;
+    margin-bottom: .45rem;
+  }
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: .4rem;
+  }
+  .card-desc {
+    font-size: .82rem;
+    color: #e9d5ff;
+    line-height: 1.65;
+  }
+
+  /* Couleurs par catégorie */
+  .cat-sujet    { background: linear-gradient(135deg, #7f1d1d, #991b1b); }
+  .cat-accroche { background: linear-gradient(135deg, #1e3a5f, #1e40af); }
+  .cat-action   { background: linear-gradient(135deg, #14532d, #166534); }
+  .cat-allies   { background: linear-gradient(135deg, #3b0764, #6b21a8); }
+  .cat-menaces  { background: linear-gradient(135deg, #7c2d12, #c2410c); }
+  .cat-bonus    { background: linear-gradient(135deg, #713f12, #a16207); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>StoryMaker</h1>
+    <p>Tirez vos cartes aléatoires</p>
+  </header>
+
+  <button id="btn" onclick="generate()">
+    <svg id="btn-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2.2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="16 3 21 3 21 8"/>
+      <line x1="4" y1="20" x2="21" y2="3"/>
+      <polyline points="21 16 21 21 16 21"/>
+      <line x1="15" y1="15" x2="21" y2="21"/>
+    </svg>
+    <span id="btn-label">Tirer les cartes</span>
+  </button>
+
+  <div id="placeholder">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.5"
+         stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="16 3 21 3 21 8"/>
+      <line x1="4" y1="20" x2="21" y2="3"/>
+      <polyline points="21 16 21 21 16 21"/>
+      <line x1="15" y1="15" x2="21" y2="21"/>
+    </svg>
+    <p>Cliquez sur le bouton pour générer une quête aléatoire</p>
+  </div>
+
+  <div id="results"></div>
+
+</div>
+<script>
+const DATA = {
+  sujet: [
+    ["AFFLICTION",  "Une épidémie, une maladie, un mal qui ronge, un fléau, une souffrance qui se propage, une calamité, un malheur, un cauchemar, un désespoir, une souillure qui évolue..."],
+    ["LIEU-DIT",    "Un village, une localité, une zone habitée, un endroit de vie, un lieu de passage, un endroit connu, un hameau, un espace proche des peuples civilisés..."],
+    ["BATAILLE",    "Une guerre, un conflit armé, le choc de deux armées, une guerre civile, une mésentente, une dispute, une guérilla, une lutte pour la survie, un duel d'honneur, une croisade..."],
+    ["TRÉSOR",      "Un magot enfoui, des richesses oubliées, un eldorado caché, un objet de très haute valeur, un trésor légendaire, une cassette importante, un item convoité par beaucoup..."],
+    ["ARTEFACT",    "Un artefact magique, un lieu ou un objet de pouvoir, quelque chose imbibé de magie, un item de puissance, un symbole important, une relique ancienne..."],
+    ["NOTABLE",     "Une personne notable, un noble, un membre de la famille royale, une personne de haute ascendance, un seigneur, une personne régente, un chevalier, une auguste personnalité..."],
+    ["SURNATUREL",  "Un événement paranormal, une réalité altérée, les lois du monde bafouées, une fracture dans l'espace-temps, une anomalie, une irrégularité, un dysfonctionnement..."],
+    ["POLITIQUE",   "Un enjeu politique ou géopolitique, l'avenir d'un pays, les dessous d'un gouvernement, les coulisses du pouvoir, des décisions aux impacts importants..."],
+    ["DISPARITION", "Une ou des disparitions, un meurtre, un crime impuni, une étrange absence, un décès anormal, une perte illogique, une destruction progressive, un éloignement..."],
+    ["LÉGENDE",     "Une légende locale, des racontars, une rumeur, des on-dit, une prophétie, un récit mythologique, un folklore, une fable, un conte se rapprochant du réel..."],
+    ["ÉLU",         "Un porteur malgré lui, un gardien désigné, une personne choisie, un favori, un prophète, une personne clé, un enfant prodigue, un être qui a un rôle à jouer..."],
+    ["HÉRITAGE",    "Quelque chose qui se transmet, une étrange hérédité, des liens du sang, un testament, une tradition, une possession traversant les âges, un bien familial..."]
+  ],
+  accroche: [
+    ["SAVOIR INTERDIT", "Un vieux grimoire, une tablette occulte, des lettres anciennes, un recueil oublié, des écritures de jadis, un noir manuscrit, des recherches obscures, un traité de magie..."],
+    ["CONTRAT",         "Un mandat déposé par un commanditaire, une affiche sur un panneau de quêtes, une offre d'emploi pas comme les autres, une recherche urgente, une demande de mercenariat..."],
+    ["DÉCOUVERTE",      "Une découverte troublante, un mystère non élucidé, une énigme qui agite les foules, une diablerie, une trouvaille qui inquiète, des conséquences aux causes inconnues..."],
+    ["SCÈNE",           "Une scène aux témoins fortuits, quelque chose qu'il ne fallait pas voir, un secret révélé, une preuve oculaire, une présence qui importune, une observation cachée..."],
+    ["COMBAT",          "Une embuscade, une attaque soudaine, une entrée directe dans l'action, une bataille en cours, un conflit naissant, la découverte d'une guerre, un combat surprise..."],
+    ["RENCONTRE",       "Une trouvaille au milieu de nulle part, une rencontre inattendue, une découverte, quelque chose que l'on décèle, le fruit du hasard, une opportunité du destin..."],
+    ["LIEU DÉSOLÉ",     "Un village désert, une zone de guerre passée, un convoi dépeuplé, une cité silencieuse, les restes d'un conflit, une civilisation disparue, un lieu-dit sans âme..."],
+    ["DÉTAIL",          "Un détail passé inaperçu, une redondance étrange, un indice caché, un petit quelque chose qui diffère de la normale, un élément qui attire l'attention, une petite étrangeté..."],
+    ["PERTURBATION",    "Une perturbation anormale dans le paysage (magique, sonore, visuelle, olfactive...), un bouleversement, un trouble, un ébranlement, un chaos naissant, un désordre."],
+    ["AGITATION",       "Une agitation animant la foule, des cris, une affluence anormale, une manifestation, un regroupement inhabituel, un afflux soudain, un mouvement insolite..."],
+    ["INJONCTION",      "Un ordre royal, l'édit d'un seigneur, un ordre qui vient d'en haut, l'annonce d'un héraut, une marque d'autorité, une présence de coercition, un couvre-feu, une loi locale..."],
+    ["RUINES",          "Un château oublié, des ruines anciennes, un lieu magique séculaire, un vieux temple, une tombe antique, un vestige du passé, un domaine ancestral, une demeure vétuste..."]
+  ],
+  action: [
+    ["DEMANDE D'AIDE", "Quelqu'un qui requiert de l'aide de vive voix, un besoin exprimé, une requête non officielle, une supplication, un recours désespéré, un appel au secours..."],
+    ["MUTATION",       "Un environnement modifié, une nature malade, des alentours transformés, un milieu muté, un climat étrange, une ambiance qui sort de l'ordinaire..."],
+    ["INFILTRER",      "Se faufiler, espionner, se présenter sous une fausse identité, entrer par effraction, pénétrer un réseau, épier des activités, filer une personne, voir de plus près..."],
+    ["ASSASSINER",     "Tuer quelqu'un, empoisonner une personne, régler son compte, supprimer une cible, discréditer quelqu'un, mettre hors-circuit, commettre un meurtre sporadique..."],
+    ["ESCORTER",       "Assurer la sécurité d'un bien ou d'une personne, protéger et accompagner sur un trajet, défendre pendant l'accomplissement de quelque chose..."],
+    ["RITUALISER",     "Invoquer une entité, accomplir un rituel, apaiser les esprits, rendre hommage aux dieux, suivre des rites, s'enquérir d'une prophétie, porter une prière..."],
+    ["DÉROBER",        "Subtiliser un bien, voler un objet, braquer une banque, monter une arnaque, arrêter un convoi, pickpocket, marauder, vol à la tire, faire un casse..."],
+    ["RETROUVER",      "Chercher ce qui a disparu, suivre une piste, retracer des événements, récupérer ce qui a été perdu ou subtilisé, appréhender une personne en fuite..."],
+    ["COLLECTER",      "Récupérer des objets, ramasser des ressources, rassembler des éléments, réunir des artefacts, recueillir des dettes, compulser des témoignages, engranger du savoir..."],
+    ["ATTAQUER",       "Mener l'assaut, faire une embuscade, assiéger un lieu, aller au conflit frontal, faire la guerre, défendre une position, tenir un siège, protéger un endroit..."],
+    ["DÉLIVRER",       "Rendre la liberté à des prisonniers, faire évader quelqu'un, soustraire une personne à un jugement, briser un enfermement, rompre un sceau..."],
+    ["INFORMER",       "Transmettre un message, délivrer une lettre ou une missive, avertir d'un danger, apporter une requête, être ambassadeur, donner un signal, allumer un fanal..."],
+    ["ENQUÊTER",       "Lever le voile sur un mystère, résoudre une affaire irrésolue, percer à jour une imposture, se renseigner, comprendre pourquoi, rechercher des preuves..."],
+    ["DÉTRUIRE",       "Saboter quelque chose, anéantir une menace, saper les défenses, dégrader un lieu, raser un endroit, briser, démolir une structure, démanteler un réseau..."],
+    ["REBÂTIR",        "Réparer ce qui a été brisé, remettre en marche, rétablir à la normale, guérir une personne, restaurer la splendeur d'antan, aider à une renaissance, se régénérer..."]
+  ],
+  allies: [
+    ["PRÊTRE",          "Un prélat, une personne d'église, une personne de foi, un pasteur, un prêcheur, un ecclésiaste, un représentant d'une autre religion, un présumé envoyé des dieux..."],
+    ["CRIMINEL",        "Un malfaiteur, un coupable désigné faussement, une mafia, une guilde de voleurs, un réseau de commerce illégal, un commerçant du marché noir, un mécréant utile..."],
+    ["ANONYME",         "Une personne ne révélant pas son identité, un agent opérant depuis les ombres, une source anonyme, une missive non signée, un opportuniste, un but qui converge en secret..."],
+    ["AVENTURIER",      "Un vagabond passant par là, un voyageur égaré, un chevalier errant, un baroudeur, un mercenaire, un aventurier sur la même affaire, une personne avec un but précis..."],
+    ["ERMITE",          "Une personne vivant seule, un paria, un chaman, une sorcière, un druide, une personne élevée par des animaux, un reclus de la société, un être à l'écart..."],
+    ["RENÉGAT",         "Un traître à sa cause, une personne ayant brisé son serment, un apostat, un déserteur, un agent double, un transfuge, un hérétique, un parjure, une personne déloyale..."],
+    ["SHÉRIF",          "Un représentant de la loi, une figure de pouvoir, un gendarme, un agent de l'ordre, un militaire, un porte-parole, un préfet, une personne reconnue..."],
+    ["MÉTAMORPHE",      "Une personne changée en animal ou en objet, un messager mystique, un doppelganger, un animal doué de parole, une guide spirituel, un ancêtre..."],
+    ["SAVANT",          "Un érudit, une personne de savoir, un scientifique, un magicien, un étudiant, un artiste, un chercheur, un pionnier, un prospecteur, un chercheur de vérité..."],
+    ["ESPRIT",          "Un fantôme qui n'a pas trouvé la paix, une entité de jadis, une âme errante, un spectre dictant ses conditions, un mort qui persiste, un être paranormal, d'un autre monde..."],
+    ["GENTIL MONSTRE",  "Un monstre pas si méchant, un être allant contre sa condition, un monstre pacifiste, un être en paix avec les races civilisées, un monstre utile à un groupe..."],
+    ["TÉMOIN",          "Une victime, un survivant, un prisonnier, une personne sous le choc ou amnésique, un quidam passant par là au bon moment, un œil avisé, une personne sachant des choses..."],
+    ["CITOYEN",         "Un groupe de villageois vengeurs, un collectif décidé à agir, une personne désireuse de résoudre le problème, une milice, un groupe de vendetta, des habitants revanchards..."]
+  ],
+  menaces: [
+    ["PARASITE",          "Entité parasitaire, insectoïde, monstres gravitant en essaim, porteurs d'une affliction, monstruosités allant par vague, masses grouillantes, organisme virulent..."],
+    ["TRIBU DE CRÉATURES","Groupe tribal, regroupement de petits monstres, kobolds, gobelins, hommes-bêtes, êtres privilégiant le poids du nombre..."],
+    ["SECTE",             "Ordre religieux illégal, hérétiques, clan d'apostats, clergé tout-puissant, inquisition, rassemblement de fanatiques, religieux extrêmes, adeptes d'une croyance..."],
+    ["MERCENAIRES",       "Autre groupe d'aventuriers concurrents, chasseurs de primes, assassins, tueur à gages, traqueur d'aventuriers, corsaire, limier..."],
+    ["BANDITS",           "Groupe de pillards, voleurs, détrousseurs, hors-la-loi, membres d'une mafia, entité du crime, pilleurs de sépulture, contrebandiers, criminels, pirates..."],
+    ["TÉNÈBRES",          "Entité des ténèbres, vampire, démon, loup-garou, être voué à la destruction, bête chaotique, monstre des ombres, assermenté à la Nuit, goule, noyeur..."],
+    ["ECTOPLASME",        "Fantôme, esprit frappeur ou vengeur, lémure, spectre du passé, djinn farceur, revenant d'une époque révolue, feu-follet, mort-vivant, gardien d'un lieu..."],
+    ["NOBLE",             "Noble corrompu, conspirateur, un complotiste, un traître, un usurpateur, un connétable prêt à tout pour parvenir à ses fins, un conglomérat..."],
+    ["AUTORITÉS",         "La garde, les représentants de la loi, une milice corrompue, des militaires appliquant la loi martiale, une dictature, un régime répressif, des chasseurs de coupables..."],
+    ["OPPOSANTS",         "Des militaires d'un pays ennemi, des révolutionnaires, des terroristes, des dissidents, des rebelles, des séparatistes, des partisans dévoués à une cause..."],
+    ["CRÉATURE MAGIQUE",  "Monstres liés à la magie, lutin, fée, doppelganger, automate, golem, petits élémentaires, entités faites de magie ou bien conçues par la magie..."],
+    ["COLOSSE",           "Un gros monstre, un troll, un dragon, une araignée géante, un ogre, un titan, une entité colossale, un élémentaire, un béhémot, un cyclope, un animal géant..."],
+    ["MAGICIEN FOU",      "Un nécromancien, un élémentaliste ayant perdu la raison, un érudit psychopathe, un mage consumé par le pouvoir, un sorcier maudit, un ensorceleur ensorcelé..."]
+  ],
+  bonus: [
+    ["UNION",          "Mariage, assemblage, alliance, harmonie, mélange, connexion, lien, unité, fusion, fraternité, coalition, entente, amitié, inimitié naturelle, désunion, haine, amour, séparation..."],
+    ["ALTÉRATION",     "Malédiction, maladie, altération du corps ou de l'esprit, aliénation, damnation, poison, destin scellé, affliction détruisant ce qu'elle touche, transformation profonde..."],
+    ["RÊVE",           "Imagination, rêverie, cauchemar, onirique, vision, illusion, mirage, hallucination, songe, pensées, fantasme, qui n'est pas réel, dans l'esprit, transe, prémonition..."],
+    ["CRÉATION",       "Arts, naissance, construction, genèse, fabrication, conception, cosmogonie, innovation, ouvrage, œuvre, constitution, élaboration..."],
+    ["MAGIE INSTABLE", "Magie expérimentale, connaissance primitive, savoir incomplet, sorcellerie dangereuse, équilibre précaire, faculté imprévisible, résultats variables, inconstance..."],
+    ["VENDETTA",       "Vengeance, représailles, justice par soi-même, vindicte, punition, châtiment, némésis, revanche, ressentiment, loi du talion, riposte..."],
+    ["VOYAGE",         "Expédition, qui vient de loin, exotique, provenant d'ailleurs, étranger, déplacement, pas d'ici, périple, sur les routes, nomade, errant, pèlerinage, migration, itinérant..."],
+    ["MENSONGE",       "Tromperie, secret, faux-semblant, façade, hypocrisie, fausseté, réalité mensongère, histoire réécrite, fourberie, bluff, feinte, imposture, usurpation..."],
+    ["DON",            "Capacité octroyée, savoir offert, cadeau mystique, présent confié par ce qui dépasse, faveur de la nature, bonne étoile, grâce de la destinée, coup du sort..."],
+    ["ÉON",            "Divin, démoniaque, venu d'une autre dimension, d'un autre plan, d'une réalité différente, qui dépasse l'entendement, d'une autre nature, céleste, sacré, suprême, transcendant..."],
+    ["(IM)PARFAIT",    "Perfection, utopique, sans défaut, merveille, pureté, sainteté, beauté, vertueux, imperfection, dystopique, immonde, blasphématoire, déchu, satané, affreux..."],
+    ["OUBLIÉ",         "Perdu, dont on a égaré la trace, abandonné, tombé dans l'oubli, méconnu, délaissé, qui a été effacé, inconnu de tous, dont le monde n'a pas gardé souvenir..."],
+    ["PROPHÉTIE",      "Ce qui est annoncé, cycle temporel, divination, présage, vérité qui se révélera bientôt, vision d'oracle, événement à venir, projection du futur, prédiction d'un autre temps..."]
+  ]
+};
+
+const CATEGORIES = [
+  { key: "sujet",    label: "Sujet",    cls: "cat-sujet"    },
+  { key: "accroche", label: "Accroche", cls: "cat-accroche" },
+  { key: "action",   label: "Action",   cls: "cat-action"   },
+  { key: "allies",   label: "Alliés",   cls: "cat-allies"   },
+  { key: "menaces",  label: "Menaces",  cls: "cat-menaces"  },
+  { key: "bonus",    label: "Bonus",    cls: "cat-bonus"    }
+];
+
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+let busy = false;
+
+function generate() {
+  if (busy) return;
+  busy = true;
+
+  const btn   = document.getElementById("btn");
+  const icon  = document.getElementById("btn-icon");
+  const label = document.getElementById("btn-label");
+
+  btn.disabled = true;
+  icon.classList.add("spin");
+  label.textContent = "Tirage en cours…";
+
+  document.getElementById("placeholder").style.display = "none";
+  const container = document.getElementById("results");
+
+  // Fade out les cartes existantes
+  container.querySelectorAll(".card").forEach(c => c.classList.remove("show"));
+
+  setTimeout(() => {
+    container.innerHTML = "";
+
+    CATEGORIES.forEach(({ key, label: catLabel, cls }, i) => {
+      const [titre, description] = rand(DATA[key]);
+
+      const card = document.createElement("div");
+      card.className = `card ${cls}`;
+      card.innerHTML =
+        `<div class="card-cat">${catLabel}</div>` +
+        `<div class="card-title">${titre}</div>` +
+        `<div class="card-desc">${description}</div>`;
+
+      container.appendChild(card);
+      setTimeout(() => card.classList.add("show"), 30 + i * 70);
+    });
+
+    icon.classList.remove("spin");
+    // Remettre l'icône shuffle
+    icon.innerHTML = `
+      <polyline points="16 3 21 3 21 8"/>
+      <line x1="4" y1="20" x2="21" y2="3"/>
+      <polyline points="21 16 21 21 16 21"/>
+      <line x1="15" y1="15" x2="21" y2="21"/>`;
+    label.textContent = "Tirer les cartes";
+    btn.disabled = false;
+    busy = false;
+  }, 350);
+}
+</script>
+</body>
+</html>

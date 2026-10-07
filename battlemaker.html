@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Battlemaker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 8vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #818cf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  #card {
+    width: 100%;
+    max-width: 580px;
+    background: rgba(30, 41, 59, .85);
+    border: 1px solid rgba(99, 102, 241, .25);
+    border-radius: 1.25rem;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,.4);
+    transition: box-shadow .4s, opacity .15s;
+  }
+
+  #card.flash { opacity: .5; }
+
+  #card .empty {
+    color: #475569;
+    text-align: center;
+    font-size: 1.05rem;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: .3rem .85rem;
+    border-radius: .5rem;
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 1rem;
+    width: fit-content;
+  }
+
+  .cat-Environnement { background: linear-gradient(135deg,#0284c7,#1d4ed8); box-shadow: 0 4px 12px rgba(2,132,199,.4); }
+  .cat-Élément       { background: linear-gradient(135deg,#d97706,#c2410c); box-shadow: 0 4px 12px rgba(217,119,6,.4); }
+  .cat-Décor         { background: linear-gradient(135deg,#475569,#374151); box-shadow: 0 4px 12px rgba(71,85,105,.4); }
+  .cat-Individu      { background: linear-gradient(135deg,#e11d48,#b91c1c); box-shadow: 0 4px 12px rgba(225,29,72,.4); }
+  .cat-Bonus         { background: linear-gradient(135deg,#7c3aed,#6d28d9); box-shadow: 0 4px 12px rgba(124,58,237,.4); }
+
+  .glow-Environnement { box-shadow: 0 0 40px rgba(2,132,199,.35),   0 20px 40px rgba(0,0,0,.4); }
+  .glow-Élément       { box-shadow: 0 0 40px rgba(217,119,6,.35),   0 20px 40px rgba(0,0,0,.4); }
+  .glow-Décor         { box-shadow: 0 0 40px rgba(71,85,105,.35),   0 20px 40px rgba(0,0,0,.4); }
+  .glow-Individu      { box-shadow: 0 0 40px rgba(225,29,72,.35),   0 20px 40px rgba(0,0,0,.4); }
+  .glow-Bonus         { box-shadow: 0 0 40px rgba(124,58,237,.35),  0 20px 40px rgba(0,0,0,.4); }
+
+  #card-title {
+    font-size: clamp(1.4rem, 4.5vw, 1.9rem);
+    font-weight: 700;
+    color: #f1f5f9;
+    line-height: 1.2;
+    margin-bottom: .8rem;
+  }
+
+  #card-desc {
+    color: #94a3b8;
+    line-height: 1.75;
+    font-size: .98rem;
+  }
+
+  #btn {
+    width: 100%;
+    max-width: 580px;
+    background: linear-gradient(135deg, #6366f1, #7c3aed);
+    color: #fff;
+    border: none;
+    border-radius: .875rem;
+    padding: 1rem 1.5rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    box-shadow: 0 8px 24px rgba(99,102,241,.4);
+    transition: filter .15s, transform .15s, box-shadow .15s;
+  }
+
+  #btn:hover  { filter: brightness(1.12); transform: translateY(-2px); box-shadow: 0 12px 28px rgba(99,102,241,.55); }
+  #btn:active { filter: brightness(.9);   transform: translateY(0);    box-shadow: 0 4px 12px rgba(99,102,241,.3); }
+
+  #counter {
+    margin-top: 1rem;
+    color: #334155;
+    font-size: .82rem;
+    text-align: center;
+    min-height: 1.2em;
+  }
+</style>
+</head>
+<body>
+
+<h1>Battlemaker</h1>
+
+<div id="card">
+  <p class="empty">Tirez votre première carte pour commencer</p>
+</div>
+
+<button id="btn" onclick="draw()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2.2"
+       stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="16 3 21 3 21 8"/>
+    <line x1="4" y1="20" x2="21" y2="3"/>
+    <polyline points="21 16 21 21 16 21"/>
+    <line x1="15" y1="15" x2="21" y2="21"/>
+  </svg>
+  Tirer une nouvelle carte
+</button>
+
+<p id="counter"></p>
+
+<script>
+const CARDS = {
+  "Environnement": [
+    ["Grêle",         "Grêlons, chute d'éléments contondants, impossibilité d'utiliser des projectiles, tintamarre ambiant, faibles dégâts épars, risque d'être assommé ou de glisser."],
+    ["Foudre",        "Orage frappant aléatoirement, risque de foudroiement à découvert ou sous un paratonnerre, surcharge énergétique, départ de feu, couverture sonore."],
+    ["Éruption",      "Éruption volcanique, coulée de magma, geyser, jaillissement de liquide brûlant, risque de brûlures, blocage de certains accès, haute température, chute de cendres et scories."],
+    ["Canicule",      "Canicule, chaleur étouffante, soleil de plomb, sécheresse, fatigue plus rapide, risque de suffocation sous une armure de métal, éblouissement par le soleil, déshydratation."],
+    ["Inondation",    "Inondation, rupture de digue, tsunami, coulée de boue, submersion soudaine de la zone, raz-de-marée, marée montante, risque de noyade, d'être emporté par le courant."],
+    ["Humidité",      "Brouillard, brume, vapeurs, forte réduction de la vision, opacification des lieux, risque de se perdre de vue, de ne pas déceler les menaces, perte de repères spatiaux."],
+    ["Obscurité",     "Nuageux, soleil voilé, nuit noire, pénombre, éclipse, obscurité générale, besoin impératif de lumière, risque de trébucher, de se perdre, mouvements incertains."],
+    ["Glissement",    "Avalanche, glissement de terrain, éboulement, chute d'importante masse de matière, risque d'être enseveli, d'être emporté, recouvrement important du relief."],
+    ["Glacial",       "Température très basse, atmosphère polaire, ambiance glacée, risque d'engelures nécrosées, de finir congelé, hypothermie progressive, engourdissement."],
+    ["Tempête",       "Khamsin, blizzard, tempête transportant des particules, vision diminuée, difficulté à se déplacer, risque de se perdre ou d'être emporté, variations brusques de température."],
+    ["Bourrasque",    "Vent violent, cyclone, ouragan, rafales, hurricane, risque d'être emporté, forte déviation des projectiles, éléments détachables du décor virevoltant."],
+    ["Anomalie",      "Perturbation magnétique, déferlante de magie, anomalie météorologique, risque d'événements hautement imprévisibles, paranormaux, étranges, inédits."],
+    ["Tornade",       "Tornade, typhon, maelström, tourbillon, risque de se retrouver propulsé dans les airs, zone d'aspiration se déplaçant sur la carte, destruction progressive."],
+    ["Séisme",        "Tremblement de terre, séisme, secousse, ébranlement, modification du relief, risque de perdre l'équilibre, de se retrouver pris dans un éboulis."],
+    ["Précipitation", "Pluie torrentielle, chute de neige, précipitation, terrain boueux, mousson, risque de glissade ou d'être embourbé, déplacements réduits, forte humidité."]
+  ],
+  "Élément": [
+    ["Pal",           "Pieu, élément pointu, stalactite, stalagmite, objet sur lequel il est possible d'empaler un adversaire ou quelque chose, qui peut servir à percer une carapace."],
+    ["Cordages",      "Des lianes, des cordes, des chaînes pendues au plafond, un moyen de se balancer, de monter, de se suspendre, d'aller rapidement à un endroit, de s'amarrer."],
+    ["Puits",         "Puits, abîme, cavité, gouffre, cuve, fosse, renfoncement dans lequel on peut tomber et ne jamais pouvoir ressortir, risque de chute, de se retrouver dans un autre lieu."],
+    ["Prisonnier",    "Entité en cage, détenu, créature ou personne incarcérée, otage à sauver ou à protéger, allié potentiel en cas de libération, aide pouvant être récompensée plus tard."],
+    ["Suspendu",      "Rideaux, tentures, lustre, chandelier, cloche, élément en suspension que l'on peut faire tomber pour gêner ou endommager les adversaires, ou bien chuter tout seul."],
+    ["Précieux",      "Trésor, objet précieux, possession de valeur, butin, artefact, une œuvre d'art au milieu du combat, quelque chose de rare, d'inestimable, qui peut être volé ou brisé."],
+    ["Ossements",     "Des ossements, un squelette, un cadavre à ciel ouvert, un mort, une carcasse, les restes d'un individu malchanceux, des indications sur l'origine de sa mort et de la menace."],
+    ["Machine",       "Engin de guerre, baliste, gatling, catapulte, dispositif de bataille donnant un avantage stratégique à celui qui le contrôle, puissance de feu accrue, zone à contrôler."],
+    ["Cambuse",       "Réserve de nourriture, endroit où sont entreposés boissons et aliments, des caisses de ressources vitales, une cuisine, un entrepôt de denrées essentielles, réserve."],
+    ["Biohazard",     "Contenant au contenu inhabituel, toxique, substance dangereuse, matière instable, risque d'effets inattendus s'il venait à être brisé, zone de contamination, de danger."],
+    ["Armement",      "Un râtelier d'armes, un rack d'objets dangereux, une caisse de munitions, un équipement transportable et qui peut renverser le cours du combat, une combinaison spéciale."],
+    ["Lumière",       "Source de lumière, feu, lampe à pétrole, flamme, ampoule, éclairage qui peut être brisé pour amener l'obscurité, zone de vision, où l'on est révélé, flash éblouissant."],
+    ["Outils",        "Caisse à outils, tas d'appareils usés, des cordes, des trucs abandonnés, un bric-à-brac, une réserve d'engins usagés, d'instruments, d'éléments réutilisables, à bidouiller."],
+    ["Exfiltration",  "Un moyen de fuite, d'évacuation, de se soustraire au combat, un moyen de transport pour s'enfuir ou se déplacer, une trappe cachée, une porte dérobée."],
+    ["Piège",         "Zone piégée, mine de proximité, mécanisme se déclenchant sous certaines conditions, pouvant endommager, gêner ou tuer ceux qui s'y retrouvent."],
+    ["Batterie",      "Pile, zone de stockage d'énergie, alimentation, puits de magie, source d'énergie, générateur, élément produisant une ressource utilisable, qui peut être interrompue."]
+  ],
+  "Décor": [
+    ["Explosion",       "Déflagration, détonation, substance instable, souffle soudain, destruction brusque du décor, risque de démembrement, d'être sonné, repoussé par le souffle."],
+    ["Fragile",         "Zone délabrée, endroit affaibli, instable, équilibre précaire, érodé, endommagé, vermoulu, en ruine, risque d'écroulement, nécessité de mouvements précautionneux."],
+    ["Trou",            "Sol qui se dérobe, faille, crevasse, craquelure, déchirure, risque de tomber de haut, disparition progressive du sol, affaissement de la zone, descente de quelques étages."],
+    ["Zéro G",          "Zone d'apesanteur, gravité modifiée, attraction ou répulsion magique, lévitation forcée, flottement, mouvements dans les airs, déplacements modifiés."],
+    ["Mort subite",     "Zone de mort subite dévoilée, broyeur, ventilateur géant, réacteur en marche, bassin toxique, piège, câble à nu, espace létal, risque de mort directe, danger mortel."],
+    ["Interrupteur",    "Obscurité soudaine, lumières s'éteignant brutalement, zone plongée dans les ténèbres, lampe qui grésille, risque de se cogner, de ne pas déceler les dangers ou les menaces."],
+    ["Glissant",        "Surface glissante, zone huileuse, terrain savonneux, verglas, risque de perte d'équilibre, de chute, mouvements plus complexes, glissades soudaines."],
+    ["Fuite",           "Flaque, dégagement gazeux, écoulement de produit, zone de contamination, risque d'intoxication, d'hallucination, perte de connaissance, vomissement."],
+    ["Débris",          "Fragments épars, décombres, épaves, éléments pouvant servir d'armes improvisées, d'armes de fortune, générateur de nouvelles opportunités, alternatives pour vaincre."],
+    ["Amoncellement",   "Zone où de la matière s'accumule, amas, tas, bosse, agrégat, entassement, monticule, dépôt, empilement, risque d'atteindre une masse critique, terraformation."],
+    ["Fermeture",       "Route qui se ferme, clôture d'un chemin pouvant mener à la sortie, condamnation des accès, obstruction, risque de se retrouver pris au piège, enfermé, coincé, cloisonné."],
+    ["Effondrement",    "Effondrement du décor, chute d'éléments imposants, écroulement, destruction du plafond, éboulement, risque de se retrouver coincé ou écrasé, enseveli, broyé."],
+    ["Départ de feu",   "Incendie, flammes qui se propagent, risque de suffocation, manque d'oxygène, passages devenant impossibles, risque de brûlures, destruction progressive du décor."],
+    ["Secret",          "Zone secrète découverte, passage dérobé percé à jour, lieu caché, à l'abri des regards, recoin méconnu, risque d'y découvrir de nouvelles menaces, des mystères."],
+    ["Sables mouvants", "Zone d'enfoncement, tourbière, terrain embourbé, gluant, risque de sombrer, d'être absorbé, englouti, déplacements très limités, nécessité d'aide pour sortir."]
+  ],
+  "Individu": [
+    ["Kamikaze",         "Ennemi perdant la raison, suicidaire, folie soudaine, un combattant décide de tenter le tout pour le tout, de tout réduire à néant, d'emporter le monde avec lui."],
+    ["Handicap",         "Combattant atteint d'un handicap permanent ou temporaire, membre manquant, cécité, mutisme, prothèse, comportement atypique, autres sens accrus."],
+    ["Esclavagistes",    "Ennemis cherchant plus à capturer les aventuriers qu'à les tuer, pièges ou armements non létaux, réduits en esclavages, vendus comme marchandises, évasion future."],
+    ["Surboosté",        "Ennemi disposant d'implants, sous drogue de combat, potion modifiant ses capacités, puissance accrue, amélioration artificielle de ses facultés, risques de retombées à la fin."],
+    ["Sentinelle",       "Ennemis postés en hauteur, surveillant la zone, dans un mirador, pouvant détecter ou attaquer les ennemis depuis des positions surélevées, attaque surprise d'en haut."],
+    ["Renforts",         "Aide soudaine et inattendue d'alliés ou d'ennemis, prise à revers d'un groupe, nouvelle arrivée de belligérants, risque d'être en sous-nombre, de se retrouver submergé, débordé."],
+    ["Blessure",         "Ennemis blessés, adversaires vulnérables, ayant déjà subi des dommages, dont une partie du groupe est diminuée, malade, affaiblie, combattant mutilé, fatigué, éclopé."],
+    ["Allié de fortune", "Une entité venant subitement aider les aventuriers, une tierce-partie en faveur du groupe, un soutien inattendu, un complice, un bienfaiteur, un acolyte encore inconnu."],
+    ["Tierce partie",    "Entité extérieure venant rejoindre le combat, créature sauvage courroucée, monstre ruant dans la mêlée, attaquant tout le monde sans distinction."],
+    ["Oriflamme",        "Regain de moral, sursaut de courage de la part de combattants, reprise de vigueur sous l'action d'un étendard, d'un sort, d'un discours."],
+    ["Duel",             "Challenge, déclaration de duel, un adversaire choisit un personnage pour se battre en combat singulier, combat à part, joute pour l'honneur, combat à mort."],
+    ["Innocents",        "Civils, innocents pris à partie dans le combat, groupe inoffensif au milieu, risque de dommages collatéraux, pertes civiles, graves conséquences, gêne, prise d'otage."],
+    ["Découragé",        "Démoralisation de certains combattants, fuite panique, déserteurs, retraite, recul désordonné, peur parcourant les rangs, affolement généralisé, moral brisé."],
+    ["Némésis",          "Chasseur de primes, assassin, ennemi connu se joignant subitement au combat, vengeance, partie tierce en défaveur du groupe d'aventuriers."],
+    ["Lien",             "Amoureux, lien fraternel, amitié profonde entre deux adversaires, souhaitant se protéger l'un l'autre, faiblesse apparente qui peut être exploitée, rage aveugle."],
+    ["Police",           "Intervention des autorités, des garants de la loi et l'ordre, des gendarmes, de la milice locale, risque d'emprisonnement, de condamnation à mort."]
+  ],
+  "Bonus": [
+    ["Exception",    "Critique, diluvien, épisode plus fort que la normale, extrême, plus fort que d'habitude, d'une rare intensité, qui sort de l'ordinaire, très présent, exceptionnel, différent."],
+    ["Chance",       "Bonne fortune, heureuse coïncidence, hasard qui fait bien les choses, une situation qui s'ouvre sur de nouvelles opportunités, astres qui s'alignent parfaitement."],
+    ["(In)efficace", "Magie ou compétence inutile, faculté à efficacité diminuée, capacité annulée, peu efficace, force décuplée, puissance accrue, catalyse des effets ou des actions entreprises."],
+    ["Domino",       "Réactions en chaîne, causes influant sur d'autres conséquences, effet domino, risque de perte de contrôle de la situation, conséquences de plus en plus graves."],
+    ["Combo",        "Qui se combine pour former quelque chose de nouveau, de plus fort, effets qui s'additionnent, qui s'entremêlent, coordination, juxtaposition, harmonisation."],
+    ["Évolution",    "Changeant, qui varie dans le temps, transformation, changement, qui se déplace, qui est modifié, qui est altéré, qui change de phase, qui grandit."],
+    ["Subterfuge",   "Qui cache autre chose, qui masque une menace plus grande, un train qui peut en cacher un autre, un risque supplémentaire irrévélé, une vérité masquée."],
+    ["Temps",        "Contre la montre, chronométré, à durée limitée, dans un nombre restreint de tours, sous la pression du temps, qui presse, bref, rapide, éphémère, timing succinct."],
+    ["Malchance",    "Déveine, infortune, malheur, en défaveur du groupe, ne va pas dans le sens, ne se passe pas comme escompté, imprévu, coup du sort, revers de la médaille."],
+    ["Retournement", "Renversement de la situation, changement brusque, inversion soudaine, variation inattendue, modification imprévue, redistribution des chances, basculement, revirement."],
+    ["Modération",   "Perte d'intensité, tempérance des effets, baisse de puissance, accalmie progressive ou soudaine, retombée, diminution, régression, reflux."],
+    ["Secondaire",   "Effet secondaire, conséquence additionnelle, symptôme, résultat supplémentaire, impact annexe, répercussion imprévue, ricochet, dégâts collatéraux, séquelles."],
+    ["Voie",         "Pénombre, visibilité réduite, opacification, sens annulés, caché, dissimulé, invisible, inconnu, effet de surprise, que l'on ne discerne pas au premier abord, peu détectable."],
+    ["Magique",      "D'origine mystique, magique, enchantée, surnaturelle, pas de ce monde, paranormale, mystérieuse, occulte, qui dépasse l'entendement, bizarre."],
+    ["Dysfonction",  "Défectueux, dont le fonctionnement ou le comportement est erratique, chaotique, inattendu, cassé, endommagé, défaut, troublé, aléatoire, perturbé."],
+    ["Infecté",      "Malade, infecté, contagieux, maudit, victime d'une affliction, vénéneux, peut être transmis, épidémie, effets secondaires, élément pathogène, virus."]
+  ]
+};
+
+const CATS = Object.keys(CARDS);
+const history = [];
+let total = 0;
+
+function rand(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function draw() {
+  // Catégories disponibles : évite les 2 dernières
+  let pool = [...CATS];
+  if (history.length >= 2) pool = CATS.filter(c => !history.slice(-2).includes(c));
+  else if (history.length === 1) pool = CATS.filter(c => c !== history[0]);
+
+  const cat = rand(pool);
+  const [titre, desc] = rand(CARDS[cat]);
+
+  // Historique (on garde seulement les 2 derniers)
+  history.push(cat);
+  if (history.length > 2) history.shift();
+  total++;
+
+  // Flash
+  const card = document.getElementById("card");
+  card.classList.add("flash");
+  setTimeout(() => card.classList.remove("flash"), 150);
+
+  // Mise à jour du DOM
+  const catKey = cat.replace(/[^a-zA-ZÀ-ÿ]/g, "");
+  card.className = "glow-" + cat;
+  card.innerHTML =
+    `<span class="badge cat-${cat}">${cat}</span>` +
+    `<div id="card-title">${titre}</div>` +
+    `<div id="card-desc">${desc}</div>`;
+
+  document.getElementById("counter").textContent =
+    total === 1 ? "1 carte tirée" : `${total} cartes tirées`;
+}
+</script>
+</body>
+</html>

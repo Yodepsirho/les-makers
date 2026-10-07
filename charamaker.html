@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CharaMaker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1e1b4b 0%, #581c87 50%, #831843 100%);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* En-tête */
+  header {
+    text-align: center;
+    padding: 1.5rem 0 1.75rem;
+  }
+
+  header h1 {
+    font-size: clamp(2rem, 7vw, 2.8rem);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: .05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+  }
+
+  header p {
+    color: #d8b4fe;
+    font-size: .88rem;
+    margin-top: .3rem;
+  }
+
+  /* Bouton */
+  #btn {
+    width: 100%;
+    background: #fff;
+    color: #3b0764;
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: .875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    transition: background .15s, transform .15s, box-shadow .15s;
+    margin-bottom: 1.5rem;
+  }
+  #btn:hover  { background: #f3e8ff; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,.4); }
+  #btn:active { background: #e9d5ff; transform: translateY(0); }
+
+  #btn svg { flex-shrink: 0; }
+
+  /* Placeholder */
+  #placeholder {
+    text-align: center;
+    color: rgba(255,255,255,.5);
+    padding: 3rem 0;
+  }
+  #placeholder svg { margin: 0 auto 1rem; display: block; opacity: .4; }
+  #placeholder p { font-size: .95rem; }
+
+  /* Cartes résultat */
+  #results { display: flex; flex-direction: column; gap: .85rem; }
+
+  .cat-card {
+    background: rgba(255,255,255,.95);
+    border-radius: .875rem;
+    padding: 1.1rem 1.25rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .cat-card.show { opacity: 1; transform: translateY(0); }
+
+  .cat-name {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: #7c3aed;
+    margin-bottom: .5rem;
+  }
+
+  .entry-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #4c1d95;
+    margin-bottom: .3rem;
+    border-left: 3px solid #a855f7;
+    padding-left: .6rem;
+  }
+
+  .entry-desc {
+    font-size: .82rem;
+    color: #374151;
+    line-height: 1.65;
+    padding-left: .6rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
+           stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      CharaMaker
+    </h1>
+    <p>Générateur de personnage aléatoire</p>
+  </header>
+
+  <button id="btn" onclick="generate()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2.2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="16 3 21 3 21 8"/>
+      <line x1="4" y1="20" x2="21" y2="3"/>
+      <polyline points="21 16 21 21 16 21"/>
+      <line x1="15" y1="15" x2="21" y2="21"/>
+    </svg>
+    Générer un personnage
+  </button>
+
+  <div id="placeholder">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none"
+         stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    <p>Cliquez sur le bouton pour générer votre personnage</p>
+  </div>
+
+  <div id="results"></div>
+
+</div>
+
+<script>
+const CATEGORIES = {
+  "ORIGINE": {
+    "MARTIAL":    "Marqué par la guerre, militaire, enfant (de) soldat, rigueur, famille de guerriers, réfugié, demandeur d'asile, apatride, crise humanitaire, victime d'un conflit, rescapé...",
+    "MODÈLE":     "Adulé, l'enfant préféré, exemple, spécimen, favori, l'élu, idole, bichonné, estimé, valorisé, enfant prodige, mascotte, vedette, coqueluche, célébrité, personnalité chérie...",
+    "ORPHELIN":   "Abandonné, délaissé, sans famille, adopté, solitaire, orphelinat, sans identité propre, famille d'accueil, fugue, enfant sauvage, isolement, dépendance, séparé...",
+    "NOMADE":     "Sur les routes, enfant du voyage, ambulant, groupe errant, bohémien, mouvement constant, routard, vagabond, explorateurs, pèlerin, troupe de théâtre itinérante, bédouin...",
+    "PROLÉTAIRE": "Ouvrier, docker, dur labeur, travailleur manuel, industrie, classe populaire, artisanat, production, exploitation, plèbe, tâcheron, simple citoyen, paysan, roturier, serf...",
+    "OPPRIMÉ":    "Persécuté, soumis, méprisé, rejeté, esclave, intouchable, domestique, asservi, exploité, maltraité, discrimination, apartheid, privé de droits, dominé, captif, déchu...",
+    "NOBLE":      "Aristocrate, grand bourgeois, qui vient d'une riche famille, héritage, sang bleu, haut lignage, patrimoine, éduqué, privilégié, élite, confort, cocon de velours, opulence...",
+    "GHETTO":     "Cité basse, enfants des rues, pauvreté, misère, milieu défavorisé, mendicité, marché noir, bidonville, taudis, paria, zone de non-droit, insalubre, précarité, marginal...",
+    "DÉRACINÉ":   "Sang-mêlé, enfant illégitime, entre deux mondes, bâtard, adopté, élevé dans un milieu différent, descendant oublié, hybride, métis, déclassé, exclu, rejeté, clandestin, mixte...",
+    "NATURE":     "Isolé, éloigné de la civilisation, survivants, autarcie, reclus, indépendant, milieu sauvage, enclave lointaine, rudesse du climat, clan tribal, terre sauvage, primitif, primal...",
+    "EXOTIQUE":   "Étranger, indigène, qui vient d'un autre pays, issu d'une culture différente, exilé d'une terre lointaine, nomade, immigrant, nouvel arrivant, qui vient d'ailleurs...",
+    "RELIGION":   "Élevé dans une foi, au sein d'une communauté centrée sur des croyances spirituelles, fermé à la modernité, conservateur, membre d'un culte fermé, règles strictes..."
+  },
+  "MARQUE": {
+    "MUTATION":      "Transformé dans sa chair, métamorphose, altération, modification en profondeur, changement corporel, tare, cicatrice, trouble, atteinte à l'intégrité physique...",
+    "GENÈSE":        "Début, naissance, création, émergence, fondation, avènement, élaboration, conception, génération, formation, commencement, prémices, arrivée...",
+    "SACRIFICE":     "Renoncement, martyr, privation, offrande, résignation, expiation, pénitence, acte désintéressé, don de soi, fatalité, oblation, héroïsme, engagement strict...",
+    "ERREUR":        "Mauvais choix, échec cuisant, qui a commis l'irréparable, pacte, qui a bravé l'interdit, liaison peu enviable, faute, méprise, égarement, bêtise, dérapage, anomalie, raté...",
+    "TRAHISON":      "Promesse brisée, couteau dans le dos, serment non tenu, cadeau empoisonné, tricherie, infidélité, complot, abandon, usurpation, parjure, corruption, imposture...",
+    "RÉVÉLATION":    "Miracle, épiphanie, rencontre providentielle, initiation, transformation, apparition, illumination, éveil, bénédiction, inspiration, vérité nouvelle, surprise...",
+    "PERTE":         "Défaite, tragédie, débâcle, chute, revers, déboire, fiasco, diminution, disparition, repli, dépouillement, déclin, faillite, aliénation, démantèlement, manque, capitulation...",
+    "CHÂTIMENT":     "Disgrâce, humiliation, prison, exil, stigmatisation, punition, sanction, condamnation, répression, supplice, amende, sentence irrévocable, ordalie, anathème, arrestation...",
+    "AMOUR BRISÉ":   "Désillusion, rupture difficile, chagrin d'amour, séparation déchirante, abandon, douleur émotionnelle, rejet qui fait mal, éloignement, sentiments ébranlés, blessure profonde...",
+    "CONFLIT":       "Guerre, duel, agression, dispute, querelle, bataille, tension, opposition, rivalité, combat, lutte, discorde, hostilité, heurt, désaccord, crise, dissension...",
+    "CATASTROPHE":   "Renversement majeur, cataclysme, désastre, fléau, malheur, chaos, effondrement, globalisé, crise importante, naufrage, explosion, accident, bouleversement, apocalypse...",
+    "TRIOMPHE":      "Réussite retentissante, avancée notable, accomplissement, prestige, apogée, célébration, victoire à la Pyrrhus, succès amer, performance, gain éphémère, exploit..."
+  },
+  "MOTIVATION": {
+    "DÉTRUIRE":   "Anéantir, ruiner, abattre, démolir, raser, ravager, éradiquer, désorganiser, annihiler, briser, démanteler, saboter, mettre un point final, réduire en poussière...",
+    "PROTÉGER":   "Défendre, garantir la sécurité, sauvegarde, protéger quelqu'un de cher, sauver ce qui peut encore l'être, escorter, préserver un secret, faire rempart, secours, garder...",
+    "RESTAURER":  "Récupérer ce qui a été perdu, retrouver quelqu'un ou quelque chose qui a disparu, redorer un blason, rassembler, trouver un équilibre, réunir, réhabiliter, ressusciter, réparer...",
+    "RICHESSE":   "Gain financier, recherche de stabilité, créer un héritage, s'offrir une belle retraite, faire fortune, prospérité, accumulation, abondance, luxe, opulence, trésor, capital...",
+    "SURVIVRE":   "Résistance, subsistance, fuite, évasion, se cacher d'une menace, débrouillardise, chasse à l'homme, course, instinct de conservation, adversité, éloignement, en cavale...",
+    "RÉDEMPTION": "Salut, délivrance, briser un cycle, redéfinir son identité, racheter des erreurs passées, apaiser une culpabilité, repentance, pardon, réconciliation, absolution...",
+    "POUVOIR":    "Dominer, contrôle, asseoir une autorité, conquérir, devenir plus fort, ascension, évoluer au-dessus des autres, distancer la concurrence, gagner en influence, prendre l'ascendant...",
+    "HONNEUR":    "Désir de justice, respecter un code, lutte pour un idéal, suivre une tradition, estime, éthique personnelle, valeurs immuables, sous serment, réputation à tenir...",
+    "CONNAISSANCE":"Exploration, savoir, en quête de vérité(s), découverte, soif d'apprendre, expérience, comprendre, résoudre un mystère, explorer l'inconnu, dévoiler un secret, étude...",
+    "LIBERTÉ":    "Révolution, délivrer, changer le monde, briser ses chaînes, s'émanciper, construire une utopie, changer un destin imposé, indépendance, égalité, s'affranchir...",
+    "GLOIRE":     "Renommée, reconnaissance par autrui, se hisser au sommet d'une hiérarchie, prouver sa valeur, célébrité, apothéose, quête d'héroïsme, élévation sociale, consécration...",
+    "VENGEANCE":  "Représailles, désir de revanche, vendetta, justice personnelle, ressentiment, vieille rancune, règlement de compte, traque, recherche active des coupables, riposte, loi du talion..."
+  },
+  "VICE / VERTU": {
+    "LÂCHE / COURAGEUX":       "Couard, peureux, froussard, fuyant, veule, indécis, dégonflé, déserteur, hésitant, évitant... Déterminé, tenace, brave, persévérant, vaillant, résolu, valeureux, héroïque...",
+    "ORGUEILLEUX / HUMBLE":    "Arrogant, prétentieux, suffisant, hautain, dédaigneux, snob, vantard, vaniteux... Modeste, discret, conciliant, accessible, simple, qui se met rarement en avant...",
+    "ÉGOÏSTE / ALTRUISTE":     "Égocentrique, narcissique, individualiste, indifférent, vaniteux, rancunier, mesquin... Généreux, bienveillant, empathique, compatissant, qui offre, dévoué, attentionné...",
+    "MANIPULATEUR / SINCÈRE":  "Fourbe, opportuniste, traître, déloyal, menteur, sournois, perfide, trompeur, insidieux... Honnête, franc, droit dans ses bottes, juste, direct, intègre, fiable...",
+    "BORNÉ / TOLÉRANT":        "Obtus, catégorique, raciste, méprisant, têtu, aversion, fanatisme, obnubilé... Souple, respectueux, ouvert d'esprit, réceptif, permissif, patient, convivial, avenant...",
+    "LUXURE / PURETÉ":         "Obsédé par les plaisirs, dépravé, débauché, décadence, lubricité, immoral, indécent... Rectitude, fidélité, chasteté, retenue, pudeur, innocence, ascète, discipliné...",
+    "PARANOÏA / CONFIANCE":    "Méfiant, complotiste, jaloux, syndrome de persécution, suspicion, fantasme, angoisse... Serein, calme, confiance en soi, rationnel, discernement, objectivité, assurance...",
+    "CRUEL / BON":             "Tyran, ivre de pouvoir, abus d'autorité, sadique, impitoyable, sanguinaire... Doux, clément, tendre, miséricordieux, sensible, aimant, main secourable...",
+    "DÉNI / ACCEPTATION":      "Rêveur, illusion, utopiste, irrationnel, rejet de la réalité, occultation, oubli, négation... Admission, conscient, adaptation, lucide, qui ne se voile pas la face, perspicace...",
+    "ADDICT / SAIN":           "Drogué, accro, dépendance chimique, compulsion, excès, aliénation, perte de contrôle... Désintoxiqué, abstinent, privation, ascète, pureté du corps, sevré, sobre...",
+    "BAGARREUR / PACIFISTE":   "Agressif, belliqueux, violent, impulsif, impétueux, cogneur, querelleur, au quart de tour... Non-violent, diplomate, partisan de la paix, conciliant, humaniste, apaisant...",
+    "IMPRUDENT / SAGE":        "Téméraire, irréfléchi, négligent, qui fonce tout droit, étourdi, inconsidéré... Prudent, calme, prévoyant, vigilant, attentif, alerte, précautionneux, posé, avisé..."
+  },
+  "DÉTAIL": {
+    "AMPUTÉ":    "Mutilé, handicapé, membre manquant, privé d'une partie de son corps, prothèse, réduit, grosse cicatrice, invalidité, contrainte physique, assistance externe, estropié...",
+    "ÉPINE":     "Sujet évité ou sensible, qui détourne la conversation, évasif, tabou, omission, non-dit, refus, réticence, gêne, silence, censure, secret, restriction, interdit...",
+    "PHYSIQUE":  "Tâche de naissance, morphologie inhabituelle, singularité corporelle, regard intense, rictus particulier, vitiligo, malformation, faciès original, silhouette spéciale...",
+    "MANIE":     "Toc, habitude, gestuelle ou posture récurrente, démarche unique, rituel, comportement répété, automatisme, passion, préférence, manière, routine, tradition, règle fixée...",
+    "SCEAU":     "Marque au fer rouge, tatouage distinctif, symbole d'appartenance, emblème, insigne, blason, armoirie, preuve ostentatoire d'une allégeance...",
+    "PARFUM":    "Odeur caractéristique, fragrance inédite, empreinte olfactive, senteur, effluve, exhalaison, haleine, relent, essence, puanteur, musc, effusion, vapeur, miasme...",
+    "LIEN":      "Familier, relation spéciale, accompagné, connexion spéciale avec quelqu'un ou un endroit, affinité, amitié, amour, réseau, union, liaison, attache, fraternité...",
+    "AURA":      "Présence notable ou dérangeante, énergie, réputation, façon d'occuper l'espace, halo, impression, attitude qui sort de l'ordinaire, impact...",
+    "VOIX":      "Jargon spécifique, bégaiement, zozotement, accent, intonation particulière, trouble de la parole, phrasé peu commun, tic de langage, expression, rire atypique, mutisme...",
+    "CAPACITÉ":  "Faculté unique, aptitude hors-norme, compétence spéciale, talent, qualification, potentiel, don, savoir-faire, déficience, manque, lacune, absence, carence, défaillance...",
+    "ACCESSOIRE":"Vêtement distinctif, couleur prédominante, style notable, piercing, arme particulière, artefact, outil exotique, objet, ornements, élément auxiliaire, finition, ustensile..."
+  },
+  "CARACTÈRE": {
+    "RÉSERVÉ":      "Introverti, méfiant, silencieux, mystérieux, distant, discret, effacé, pudique, timide, fermé, solitaire, replié sur lui-même, difficile à cerner, timoré...",
+    "TAQUIN":       "Boute-en-train, culotté, désinvolte, désintéressé, ne prend rien au sérieux, effronté, insolent, énervant, cynique, immature, malicieux, sarcastique, audacieux...",
+    "MALADROIT":    "Hésitant, gauche, imprécis, pataud, balourd, indélicat, grossier, empoté, impoli, vulgaire, inconvenant, abrupt, brut de décoffrage, cru, rustre, inculte, peu raffiné...",
+    "STOÏQUE":      "Pragmatique, froid, calculateur, stratège, imperturbable, impassible, résilient, résolu, flegmatique, discipliné, maître de soi, constant, factuel, réaliste, raisonnable...",
+    "NAÏF":         "Crédule, influençable, candide, enfantin, doux rêveur, simplet, innocent, ingénu, idéaliste, dénué de malice, vulnérable, pur, gentillet, spontané, utopiste, inexpérimenté...",
+    "MANIÉRÉ":      "Précieux, sophistiqué, guindé, exagéré, pompeux, alambiqué, snob, forcé, ampoulé, étiquette, cérémonieux, solennel, raffiné, élaboré, coquet, délicat, protocolaire...",
+    "LUNATIQUE":    "Imprévisible, instable, indécis, capricieux, inconstant, troublé, tergiversant, ambivalent, mal assuré, volage, irrégulier, difficile, chaotique, tiraillé, fluctuant...",
+    "ÉMOTIF":       "Expressif, qui se laisse aisément submerger par ses émotions, colérique, sanguin, impulsif, pleurnichard, à fleur de peau, hypersensible, fragile, sentimental, intuitif...",
+    "CHARISMATIQUE":"Passionné, dynamique, séducteur, beau parleur, charmeur, énergique, expansif, exubérant, fantasque, m'as-tu-vu, inspirant, extraverti, désireux de plaire...",
+    "AUTORITAIRE":  "Dur, tyrannique, inflexible, despotique, dominateur, rigide, intransigeant, sévère, absolu, ordonnateur, oppressif, exigeant, austère, écrasant, qui commande...",
+    "CURIEUX":      "En quête de savoir, désireux d'apprendre, émerveillement face à la nouveauté, fouineur, intrigué, soupçonneux, fourre son nez partout, a les oreilles qui traînent, observateur...",
+    "BOUGON":       "Grincheux, peu affable, grognon, qui se plaint souvent, râleur, renfrogné, bourru, acariâtre, peu enclin à se tourner vers autrui, pas très avenant, antipathique, blasé...",
+    "AIMABLE":      "Amical, coopératif, avenant, enthousiaste, loyal, chaleureux, courtois, accueillant, sociable, serviable, poli, engageant, charmant, plaisant, galant, civil, accommodant..."
+  },
+  "BONUS": {
+    "MALÉDICTION": "Mauvais oeil, folie, déficience mentale, fardeau, sortilège persistant, damnation, mauvaise augure, gri-gri, karma, influence néfaste, opprobre, malheur...",
+    "OPPORTUNITÉ": "Occasion, porte ouverte, chance, possibilité, atout, prétexte, conjoncture, étoiles alignées, instant propice, situation (dé)favorable, événement imprévu, à saisir...",
+    "PROMESSE":    "Voeu, faveur, dette, serment, engagement, parole donnée, accord, contrat, obligation, garantie, marché, résolution, pacte, allégeance, deal, consentement, alliance...",
+    "DÉFI":        "Épreuve, challenge, provocation, dépassement, quête, bravade, rite de passage, enjeu, choix audacieux, mission, ambition, objectif clair, aspiration, rêve, projet, match...",
+    "SILLAGE":     "Qui a laissé des traces, causes et conséquences, raison cachée dans le passé, chemin, indices, rémanence, vestige, trauma, trajet, empreinte indélébile, ombre, répercussion...",
+    "RUMEUR":      "Secret, mystère, calomnie, insinuation, bruit de couloir, allégation, information sensible, buzz, commérage, potins, spéculation, controverse, médisance...",
+    "NÉMÉSIS":     "Rival, ennemi juré, adversaire, antagoniste, concurrent, obstacle récurrent, persécuteur, compétiteur, émule, opposant, outsider, contradicteur, détracteur...",
+    "FAIBLESSE":   "Vulnérabilité, fragilité, doute, point qui fait mal, impuissance, carence, déficience, limitation, faille exposée, susceptibilité, incapacité, démuni, vacillant...",
+    "CYCLE":       "Boucle, répétition, processus, spirale infernale, parcours, progression, renouvellement, succession, enchaînement, période, retour, mimétisme, continuité, sans fin...",
+    "MASQUE":      "Faux-semblant, qui cache ses véritables intentions, côté sombre, double jeu, simulacre, duperie, illusion, apparence trompeuse, fausseté, déguisement, hypocrisie...",
+    "CRIMINEL":    "Délinquant, hors-la-loi, coupable, malfaiteur, banditisme, forçat, méfait, illégalité, mafia, fraude, pillage, piraterie, ravisseur, recherché, complice, fugitif, corrompu...",
+    "SOUVENIR":    "Mémoire, réminiscence, évocation, nostalgie, histoire, témoignage, héritage, patrimoine, rappel, enfoui, transmission, oubli, amnésie, inhibition, restes, chroniques..."
+  }
+};
+
+const CAT_KEYS = Object.keys(CATEGORIES);
+
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function randEntry(obj) {
+  const keys = Object.keys(obj);
+  const k = rand(keys);
+  return { title: k, desc: obj[k] };
+}
+
+function generate() {
+  document.getElementById("placeholder").style.display = "none";
+  const container = document.getElementById("results");
+  container.innerHTML = "";
+
+  CAT_KEYS.forEach((cat, i) => {
+    const { title, desc } = randEntry(CATEGORIES[cat]);
+
+    const card = document.createElement("div");
+    card.className = "cat-card";
+    card.innerHTML =
+      `<div class="cat-name">${cat}</div>` +
+      `<div class="entry-title">${title}</div>` +
+      `<div class="entry-desc">${desc}</div>`;
+
+    container.appendChild(card);
+
+    // Animation en cascade
+    setTimeout(() => card.classList.add("show"), 40 + i * 60);
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Horreur Story Maker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #000 0%, #1c0000 50%, #000 100%);
+    font-family: Georgia, 'Times New Roman', serif;
+    padding: 1.5rem 1rem 3rem;
+    color: #fca5a5;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* En-tête */
+  header {
+    text-align: center;
+    padding: 2rem 0 2rem;
+    border-bottom: 2px solid #7f1d1d;
+    margin-bottom: 2rem;
+  }
+
+  .skull {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: .75rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .45; }
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 6vw, 2.2rem);
+    font-weight: 900;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: #dc2626;
+    text-shadow: 0 0 18px rgba(220,38,38,.8), 0 0 40px rgba(220,38,38,.4);
+    margin-bottom: .4rem;
+  }
+
+  header p {
+    font-style: italic;
+    color: #f87171;
+    font-size: .88rem;
+    opacity: .75;
+  }
+
+  /* Bouton */
+  #btn {
+    width: 100%;
+    background: linear-gradient(135deg, #7f1d1d, #000);
+    border: 2px solid #b91c1c;
+    color: #fecaca;
+    font-family: Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 1rem 1.5rem;
+    border-radius: .5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 20px rgba(220,38,38,.4);
+    transition: box-shadow .2s, background .2s, transform .15s;
+  }
+  #btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #991b1b, #1c0000);
+    box-shadow: 0 0 35px rgba(220,38,38,.7);
+    transform: translateY(-2px);
+  }
+  #btn:active:not(:disabled) { transform: translateY(0); }
+  #btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .btn-icon { font-size: 1.3rem; display: inline-block; }
+  .spin { animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Placeholder */
+  #placeholder {
+    text-align: center;
+    color: #7f1d1d;
+    font-style: italic;
+    padding: 3rem 0;
+    font-size: 1rem;
+  }
+
+  /* Cartes */
+  #results { display: flex; flex-direction: column; gap: 1.1rem; }
+
+  .card {
+    background: rgba(0,0,0,.85);
+    border: 2px solid #7f1d1d;
+    border-radius: .5rem;
+    padding: 1.2rem 1.35rem;
+    box-shadow: 0 0 15px rgba(139,0,0,.35);
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .4s ease, transform .4s ease, box-shadow .2s;
+  }
+  .card.show { opacity: 1; transform: translateY(0); }
+  .card:hover { box-shadow: 0 0 28px rgba(220,38,38,.55); }
+
+  .card-cat {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: #ef4444;
+    border-bottom: 1px solid #7f1d1d;
+    padding-bottom: .5rem;
+    margin-bottom: .6rem;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fca5a5;
+    margin-bottom: .4rem;
+  }
+
+  .card-desc {
+    font-size: .82rem;
+    color: #fecaca;
+    line-height: 1.7;
+    opacity: .85;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <span class="skull">💀</span>
+    <h1>Horreur Story Maker</h1>
+    <p>Générez vos cauchemars...</p>
+  </header>
+
+  <button id="btn" onclick="generate()">
+    <span class="btn-icon" id="btn-icon">🔀</span>
+    <span id="btn-label">Générer une histoire</span>
+  </button>
+
+  <div id="placeholder">
+    Cliquez sur le bouton pour invoquer une histoire terrifiante...
+  </div>
+
+  <div id="results"></div>
+
+</div>
+<script>
+const DATA = {
+  sujet: {
+    "Résurrection":   "Revenant, invocation, immortalité, contre-nature, nécromancie, éveil surnaturel, retour d'entre les morts, renaissance, inversion du processus naturel, résurgence...",
+    "Portail":        "Géhenne, pont dimensionnel, fracture temporelle, ouverture dans la réalité menant vers un autre monde, zone de passage, accès surnaturel, porte cosmique, téléportation...",
+    "Jeu":            "Distraction d'apparence bénigne, animation ludique, concours, jeu de cartes, de société, jeu-vidéo, cassette, enregistrement, vidéo du deep-web, film, creepypasta...",
+    "Premier Contact":"OVNI, alien, apparition issue d'un autre monde, rencontre du troisième type, enlèvement, mystère cosmique, qui n'est pas d'ici, entité qui émerge de l'inconnu...",
+    "Mystère":        "Caché de tous, triangle des Bermudes, endroit top-secret, zone 51, lieu à l'accès très restreint, destination dont on ne revient jamais, lieu considéré comme maudit...",
+    "Église":         "Lieu de culte, édifice sacré, béni, saint, autel vénéré, sanctuaire, croyance, folklore, destination de pèlerinage, endroit emblématique d'une religion, d'une secte...",
+    "Curiosité":      "Cabinet de curiosités, collection bizarre, reliques étranges, artefact sortant de l'ordinaire, objets paranormaux, musée des horreurs, conservatoire...",
+    "Vaudou":         "Malédiction, hantise, envoutement, sorcellerie, rituel impie, sortilège, marabout, transe tribale, gris-gris, poupée vaudou, magie issue du folklore local...",
+    "Cauchemar":      "Illusion, mauvais rêve, hallucination, hantise, traumatisme, sommeil agité, fantasmagorie, rêve qui empiète dans la réalité, angoisses, sombre présage...",
+    "Cimetière":      "Crypte, sépulcre, cercueil, ziggurat, sarcophage, catacombe, momie, tombeau, nécropole, repos des morts, zone de cryogénisation, ancien lieu de massacre, tombe...",
+    "Chantier":       "Mine, lieu d'excavation, endroit de recherche, de prospection, usine, bunker, complexe souterrain, fabrique, laboratoire de recherches, lieu d'expérimentation...",
+    "Asile":          "Orphelinat, sanatorium, asile psychiatrique, hôpital, zone d'isolation de sujets, prison spéciale, endroit sous haute-surveillance, zone de traitement, cloître..."
+  },
+  accroche: {
+    "Rumeur":        "Murmures, à voix basse, on-dit, bruits de couloir, spéculations, fuite d'informations, échos, soupçons, hoax, complotisme, potins, ragots, ouï-dire...",
+    "Fête":          "Bal costumé, festivités, festival, fête foraine, célébration, commémoration, agape, réjouissances, bacchanales, kermesse, foire, banquet, réunion...",
+    "Prolifération": "Animaux en fuite, invasion de nuisibles, afflux anormal d'êtres vivants, effet indirect sur la faune ou la flore, progression accélérée, mouvement, exode...",
+    "Hasard":        "Halte, étape d'un voyage, nez à nez, coup du sort, aléatoire, fortuit, aléa imprévisible, impromptu, pris pour cible, sort qui s'abat sur les aventuriers, fait surprenant...",
+    "Crypté":        "Message secret, enregistrement codé, image subliminale, SOS, inscriptions, hiéroglyphes, texte chiffré, sens ésotérique, qui est caché, énigme, cryptogramme...",
+    "Fait-Divers":   "Affaire classée, cold case, article dans un journal, accident répertorié, incident, scandale, chronique, révélation, témoignage, enquête sans suite, rapport délaissé...",
+    "Effigie":       "Idole, sculpture, gravures, fétiche, totem, icône, figurine, trophée, amulette pendue aux arbres, tumulus, menhir, gris-gris épars, obélisque, monticule rituel...",
+    "Quête":         "Exploration scientifique, prélèvement d'échantillon, expédition, chasse, mission, incursion, descente, opération, excursion, basse besogne, récupération périlleuse...",
+    "Charnier":      "Cadavres en nombre à ciel ouvert, bétail décédé, fosse commune, charognes éparses, nombreux décès de faune ou de flore, décrépitude généralisée, pourriture grandissante...",
+    "Crash":         "Accident inopiné, panne imprévue, naufrage, épave, choc soudain, bug, avarie moteur, arrêt d'urgence, fracas, retournement de situation, débris...",
+    "Vision":        "Medium, prémonition, perception anticipée, brève fenêtre sur le passé ou le futur, présage, flash, intuition, mémoire enfouie, destinée brusquement révélée...",
+    "Trace":         "Empreinte de pas, résidu, traînée, preuve d'un passage, stigmate, crop-circle, odeur persistante, marque tenace, début de piste, indice, signature, signe distinctif..."
+  },
+  action: {
+    "Identifier":  "Trouver, identifier l'origine, localiser, fouiller en quête d'indices, résoudre un mystère, observer, comprendre l'origine du problème, discerner le vrai du faux, découvrir, repérer...",
+    "Empêcher":    "Stopper, arrêter, détourner, retenir, écarter, bloquer, enrayer, prévenir d'un désastre, déjouer un plan machiavélique, éviter la catastrophe, freiner, immobiliser...",
+    "Désamorcer":  "Eviter que la situation n'empire, éteindre la mèche, stopper une réaction en chaîne, désengager, désactiver, déminer, calmer le jeu, désescalade...",
+    "Exorciser":   "Purifier, adjurer, conjurer le Mal, chasser les mauvais esprits, bénir les lieux, libérer de l'emprise d'une menace, bannir, délivrer d'un tourment, combat spirituel...",
+    "Fuir":        "S'évader, éviter une menace, s'enfuir d'un endroit dangereux, trouver un abri, procéder à une évacuation, se cacher, rejoindre une zone d'extraction...",
+    "Défaire":     "Briser un lien spirituel, couper une jonction, rompre l'accès à une source, fermer, saboter une ligne d'approvisionnement, obstruer le flux, boucher une entrée, décomposer, délier...",
+    "Contacter":   "Entrer en contact, rétablir les communications, remettre en route la liaison, prendre des nouvelles, joindre ceux qui ne répondent plus, s'assurer qu'un message arrive à bon port...",
+    "Utiliser":    "Se servir de, s'arranger pour qu'un effet collatéral survienne, mettre à profit, tirer un avantage de la situation ou qu'elle serve des intérêts précis...",
+    "Conquérir":   "Établir un périmètre de sécurité, mettre en place une tête de pont, sécuriser la zone, assurer la venue de renforts, dégager le terrain, préparer, déblayer la voie...",
+    "Révoquer":    "Briser le rituel, saboter l'incantation, rompre le déroulé des événements, inverser le processus, renvoyer la menace d'où elle vient, refermer une brèche, refouler...",
+    "Sacrifier":   "Faire une offrande, élaborer un pacte, trouver un sombre accord, briser des vies pour en sauver d'autres, laisser quelque chose derrière soi, abandonner, renoncer à quelque chose...",
+    "Neutraliser": "Piéger, capturer, emprisonner, confiner, maîtriser la menace, limiter ses effets, paralyser sans tuer, contrecarrer, juguler, enchaîner, appréhender, maintenir en place..."
+  },
+  allies: {
+    "Marchand":      "Pourvoyeur de matériel ou d'informations, vendeur d'éléments divers, individu neutre cherchant le profit avant tout, commerçant insolite...",
+    "Médium":        "Sorcière, oracle, chaman, maître du Ouija, divinateur, charlatan, féticheur, fakir, occultiste, astrologue, spécialiste de l'étrange, pythie, voyant, devin...",
+    "Inconnu":       "Entité n'étant pas de ce monde, venant d'ailleurs, être sentient coopératif, hybride, observateur proposant son aide, créature étrange et inoffensive, singularité...",
+    "Guide":         "Personne spécialiste d'un site ou des environs, qui connaît l'endroit et son relief, historien, sherpa, connaisseur local, qui est au courant de bien des choses...",
+    "Détenu":        "Prisonnier, criminel acceptant de coopérer, captif évadé ou en fuite, sujet d'expérience non-hostile, sociopathe sous surveillance, aliéné inoffensif, esclave, otage, bagnard...",
+    "Commando":      "Expert sur le terrain, démolisseur, soldat d'élite, agent spécial gouvernemental, espion, black ops, barbouze, mercenaire professionnel, opérateur sous couverture...",
+    "Docteur":       "Anthropologue, médecin légiste, thanatopracteur, toubib, diplômé, analyste, biologiste, guérisseur, herboriste, psychiatre, chercheur...",
+    "Détective":     "Enquêteur également sur le coup, investigateur tiers, chercheur de vérité, inspecteur, limier qui est sur une piste parallèle ou jointe, policier...",
+    "Collectionneur":"Antiquaire, archiviste, conservateur de musée, archéologue, amateur de trophées, gardien d'artefacts, curieux très (trop ?) investi, concierge, veilleur, surveillant...",
+    "Chasseur":      "Trappeur, expert en traque, pisteur, braconnier, individu ayant l'habitude de la faune locale, personne armée ou équipée pour répondre à des menaces modérées...",
+    "Transporteur":  "Aviateur, pilote, chauffeur, navigateur, accompagnateur, batelier, qui peut amener à une destination désirée moyennant finance, convoyeur, contrebandier...",
+    "Artiste":       "Ecrivain, peintre, musicien, actrice, sculpteur, créateur d'art, passionné plus ou moins talentueux, bohème, fantaisiste, marginal, asocial, créatif dans la lune..."
+  },
+  menaces: {
+    "Psychopathe":  "Déviant, serial killer, sadique, dépravé, meurtrier sans remord, individu violent mentalement instable, éventreur, mastermind, être chaotique, clown tueur...",
+    "Piège":        "Enigme macabre, jeu sournois et gore, labyrinthe machiavélique, qui met face à des dilemmes sanglants, embûche mortelle, guêpier, horrible guet-apens.",
+    "Pentacle":     "Succube, incube, créature des enfers, entité satanique, en lien avec le Diable, péché capital, être de la Goétie, trompeur, manipulateur, antéchrist invoqué ou libéré...",
+    "Poupée":       "Marionnette maléfique, pantin morbide, figurine maudite, statuette macabre, jouet animé par un esprit malsain, polichinelle malfaisant, joujou assassin...",
+    "Peurs":        "Matérialisation des peurs, illusions qui prennent vie, pires cauchemars, traumatismes à surmonter, angoisses qu'il va falloir vaincre, phobie incarnée...",
+    "Mauvais-Oeil": "Malédiction, sort qui s'abat, châtiment qui se transmet, hantise, sorcellerie influant sur la fatalité ou le hasard, possession, infortune, sort néfaste, prophétie funeste...",
+    "Invisible":    "Entité ne pouvant être vue, dans les rêves, pas sur le même plan d'existence, qui agit depuis autre part, qui prend possession de choses, de personnes...",
+    "Extraterrestre":"Horreur cosmique, alien, créature innommable, xénomorphe, monstre tentaculaire, profond, abomination d'une autre planète, qui engendre la folie...",
+    "Cryptide":     "Yeti, Wendigo, chupacabra, yokai, banshee, créature folklorique, croque-mitaine, légende urbaine, creepypasta, mythe monstrueux...",
+    "I.A.":         "Intelligence Artificielle corrompue, robot reprogrammé, androïde meurtrier, appareil hors de contrôle, machine infernale, automate tueur...",
+    "Dévoreur":     "Cannibales, plante carnivore, goule, prédateur, monstre guidé par la faim, assimilateur, mangeur d'hommes, anthropophage, chasseur, traqueur affamé...",
+    "Chimère":      "Expérience scientifique douteuse, monstruosité aux frontières de la réalité, homonculus, projet top-secret, fusion de créatures, horrible création, eugénisme...",
+    "Anomalie":     "Entité non euclidienne, irrationnelle, au-delà de l'entendement, qui maîtrise anormalement des éléments, qui modifie ou perturbe la réalité, horreur cosmique...",
+    "Obsession":    "Pulsion, fixation, obnubilation, accroc, dépendance, manie, fascination, toc, captivation, idée fixe, addiction, persévérance, maniaque, stalker, harcèlement...",
+    "Zombi":        "Nécrophage, mort-vivant, chair putréfiée, momie, horde affamée et dépourvue de discernement, contagion par morsure, infecté, contaminé, mort qui marche à nouveau..."
+  },
+  bonus: {
+    "Dystopie":    "Fausse utopie, totalitarisme, rébellion, répression, idéal, autoritaire, conditionnement, endoctrinement, tyrannie, contrôle, domination, censure, propagande, puissance...",
+    "Nanar":       "Cliché, stéréotypé, ridicule, absurde, hilarant, parodie, de série Z, navet, fou, débauche d'effets spéciaux, n'importe quoi, amusant, WTF, abusé, dingue, stupide...",
+    "Voix":        "Hurlement, murmure, écho, chuchotement, intonation, langue, parole, incantation, mélodie, vibration, langage, mélopée, vocifération, cri, gémissement...",
+    "En Série":    "Effet domino, à la chaîne, modus operandi, réaction en chaîne, connexion, effet papillon, liaison, répercussion, en cascade, cause à effet, interdépendance...",
+    "Culte":       "Fascination, kabbale, wicca, fanatisme, dévotion, rites, adoration, idolâtrie, cérémonie, pratiques ésotériques, dogme, sainte parole, messie, sauveur, déité...",
+    "Abysse":      "Gouffre, néant, vide, profondeur, océan, insondable, fosse, abîme, éternité, infini, caverne, sans-fond, trou noir, obscurité, précipice, crevasse, là où personne n'est allé...",
+    "Désespoir":   "Âme en peine, déchéance, dépression, découragement, détresse, déclin, descente, désolation, abattement, ruine, sans avenir, perdu, sans but précis, déboussolé...",
+    "Pacte":       "Engagement, serment, connivence, promesse, covenant, charte, marché, vendre son âme, être de mèche, lié par le sang, vœu, obligation, jurer fidélité...",
+    "Silence":     "Quiétude, calme, mutisme, tranquillité, réticent, sourd, solitude, clos, inaudible, anonymat, discrétion, taciturne, omission, vide intersidéral, rien, isolation...",
+    "Hérésie":     "Impur, blasphème, infamie, corruption, pollution, dépravation, vilenie, débauche, déviance, immondice, infection, tache, souillure, contamination, profanation...",
+    "Malformation":"Déformation, mutation, dysmorphie, asymétrie, aberration, désordre, déficience, anormalité, défaut, anomalie congénitale, excroissance, atrophie...",
+    "Dimension":   "Autre plan de l'existence, multivers, monde parallèle, réalité alternative, vortex, convergence, trou de ver, distorsion, fracture, l'au-delà, venu d'ailleurs...",
+    "Malaise":     "Frisson, embarras, gêne, trouble, désordre, tension, nervosité, irradié, dérangeant, évanouissement, nausée, souffrance, tourment, malaise, honte, défaillance, faiblesse...",
+    "Illuminati":  "Complot, reptilien, conspiration, manipulation des masses, main invisible, nouvel ordre mondial, société secrète, élus, illuminés, puissance cachée, élites...",
+    "Sacrifice":   "Sabbat, offrande, rituel, don de soi, immolation, rite, messe noire, mise à mort, abnégation, renonciation, cérémonie, abandon, abattage, résignation...",
+    "Progéniture": "Œuf, enfant, bébé, descendance, famille, rejeton, naissance, parenté, transmission, inoculation, jeune, perpétuation, génétique, lignée, couvée, portée...",
+    "Paranoïa":    "Sueurs froides, traumatisme, crainte, méfiance, délire de persécution, menacé, hallucination, trahison, doutes, qui voit des ennemis partout...",
+    "Possédé":     "Damné, délire, hanté, contrôlé, manipulé, envoûté, dominé, infecté, ensorcelé, sous influence, sous emprise, soumis, qui suit aveuglément, qui entend des voix..."
+  }
+};
+
+const CATEGORIES = [
+  { key: "sujet",    label: "Sujet"    },
+  { key: "accroche", label: "Accroche" },
+  { key: "action",   label: "Action"   },
+  { key: "allies",   label: "Alliés"   },
+  { key: "menaces",  label: "Menaces"  },
+  { key: "bonus",    label: "Bonus"    }
+];
+
+function rand(obj) {
+  const keys = Object.keys(obj);
+  const k = keys[Math.floor(Math.random() * keys.length)];
+  return { titre: k, desc: obj[k] };
+}
+
+let busy = false;
+
+function generate() {
+  if (busy) return;
+  busy = true;
+
+  const btn   = document.getElementById("btn");
+  const icon  = document.getElementById("btn-icon");
+  const label = document.getElementById("btn-label");
+
+  btn.disabled = true;
+  icon.classList.add("spin");
+  label.textContent = "Invocation…";
+
+  document.getElementById("placeholder").style.display = "none";
+  const container = document.getElementById("results");
+  container.querySelectorAll(".card").forEach(c => c.classList.remove("show"));
+
+  setTimeout(() => {
+    container.innerHTML = "";
+
+    CATEGORIES.forEach(({ key, label: catLabel }, i) => {
+      const { titre, desc } = rand(DATA[key]);
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML =
+        `<div class="card-cat">${catLabel}</div>` +
+        `<div class="card-title">${titre}</div>` +
+        `<div class="card-desc">${desc}</div>`;
+
+      container.appendChild(card);
+      setTimeout(() => card.classList.add("show"), 40 + i * 80);
+    });
+
+    icon.classList.remove("spin");
+    label.textContent = "Générer une histoire";
+    btn.disabled = false;
+    busy = false;
+  }, 400);
+}
+</script>
+</body>
+</html>
